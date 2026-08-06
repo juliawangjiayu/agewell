@@ -47,7 +47,7 @@
  "outputs": {"child": null, "doctor": null, "helper": "..."}}
 
 ## 示例
-输入观察："she got no mood to eat, only eat small small, tapos medyo nahihilo"
+输入观察（English/Singlish）："she got no mood to eat, only eat small small, and she say she feel a bit dizzy"
 上下文：last_med_change_date=Day3（Amlodipine 5→10mg），recent_observations 中食欲下降本周第3次
 输出：
 {"restored_text": "午饭进食量减少约50%，本周第3次，并主诉头晕",
