@@ -1,0 +1,32 @@
+# --- 密钥/环境，绝不能进仓库 ---
+.env
+.env.*
+!.env.example
+*.key
+secrets.*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.db
+*.sqlite3
+
+# --- Node / 前端 ---
+node_modules/
+dist/
+build/
+.next/
+.vercel/
+
+# --- 系统/编辑器 ---
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# --- 音频临时文件 ---
+uploads/
+*.wav.tmp
