@@ -16,8 +16,8 @@
 | name | 丽珍 |
 | language | 中文 |
 | relation | 女儿（Ah Ma 的女儿） |
-| work_schedule | 白天在 [CBD] 上班，晚上回家 |
-| notes | 家里主要照护决策者；白天不在家，靠 Rosa 贴身照护 |
+| work_schedule | **与 Ah Ma 不同住**。工作日各自生活；一般**周五晚上接 Ah Ma 一起吃饭**，**周六、周日一起吃午饭和晚饭**。周一到周四不在 Ah Ma 身边。 |
+| notes | 主要照护**决策者**，但**每周只有周五晚到周日在场**；工作日老人身边只有 Rosa 一双眼睛，全靠 Rosa 转达。 |
 
 ### 卡片 B · 被照顾老人 profile（elder_profile）
 | 字段 | 值 |
@@ -25,7 +25,7 @@
 | name | [陈亚妹 / Ah Ma] |
 | age | [82] |
 | conditions | [高血压]、[2 型糖尿病] |
-| baseline_notes | 平时三餐正常，能自己走动，晚饭后爱看电视 |
+| baseline_notes | 独自住在自己的 HDB，**与 Rosa（住家女佣）同住**；平时三餐正常，能自己走动，晚饭后爱看电视 |
 
 **用药表（medications, JSONB）**：
 | 药 | 时点 | 时间 | 备注 |
@@ -37,8 +37,8 @@
 **复诊（followups, JSONB）**：
 - clinic：[XX Polyclinic]
 - interval：[每 3 个月]
-- next_date：[Day9（本周五）]
-- last_med_change_date：**Day3**（把 [Amlodipine 5mg → 10mg]）← 升级判断的关键锚点
+- next_date：**[本周五]**（复诊；正好也是丽珍来接 Ah Ma 吃饭那天）
+- last_med_change_date：**Day3**（本周三，Rosa 带 Ah Ma 去复诊时把 [Amlodipine 5mg → 10mg]）← 升级判断的关键锚点
 
 ### 卡片 C · Caregiver 女佣 profile（caregiver_profile）
 | 字段 | 值 |
@@ -48,27 +48,36 @@
 | mother_tongue | Tagalog（常英菲混说，"eat small small"式） |
 | care_abilities | 照顾过长辈、会量血压、会做简单中餐 / [菲式]家常菜 |
 
+### 居住与团聚安排（本 demo 的关键设定）
+- **Ah Ma + Rosa 同住**在 Ah Ma 自己的 HDB；工作日（周一~周四）**老人身边只有 Rosa**。
+- **丽珍一家不同住**（自己一家四口：丽珍 + 女婿 + 2 个外孙）。团聚节奏：**周五晚上接 Ah Ma / 过来一起吃晚饭；周六、周日一起吃午饭 + 晚饭。**
+- 一周时间轴（供剧本对齐）：周一~周四 = 只有 Rosa；周五晚~周日 = 丽珍在场。
+
+> **为什么这个设定让故事更 complete、也更有说服力**：卖点不再靠"距离"——丽珍**每周都见 Ah Ma**，却依然不知道工作日发生了什么（问"妈今天怎么样"，答"还好"）。**物理上定期在场 ≠ 信息通畅**；工作日的观察只经过 Rosa 一双眼睛。这把"看得最久的人说不上话"变成字面真实，也让"即时升级"在**丽珍不在场的工作日**尤其有价值——系统替 Rosa 把该说的说出去，丽珍不必等到周五团聚才发现异常。
+
 ---
 
 ## 二、预置的历史记录（seed 时写入，让 Day5 的升级"有上下文可依"）
 
-**observations 表预置两行**（都 `record`，不惊动任何人——体现"85% 落第一层"）：
+**observations 表预置两行**（都 `record`，不惊动任何人——体现"85% 落第一层"；均为工作日，丽珍不在场）：
 | date | raw_text | restored_text | grade |
 |---|---|---|---|
-| Day1 | "Ah Ma today lunch eat small only" | 午饭进食量减少约 50% | record |
-| Day4 | "still no mood to eat, half bowl lang" | 仍进食减少，本周多次 | record |
+| Day1（周一） | "Ah Ma today lunch eat small only" | 午饭进食量减少约 50% | record |
+| Day4（周四） | "still no mood to eat, half bowl only" | 仍进食减少，本周多次 | record |
 
-**并设 elder_profile.followups.last_med_change_date = Day3。**
+**并设 elder_profile.followups.last_med_change_date = Day3（周三调药）。**
 
-> 这样一进 demo，上下文库里已经是"食欲下降 2 次 + 3 天前刚调降压药"的状态——Day5 那句头晕一进来，升级判断才有据可依，不是凭空跳红。
+> 这样一进 demo，上下文库里已经是"食欲下降 2 次 + 周三刚调降压药"的状态——Day5 那句头晕一进来，升级判断才有据可依，不是凭空跳红。**而这几天丽珍都不在 Ah Ma 身边**，全靠 Rosa 的观察进系统。
 
 ---
 
 ## 三、Demo 当场输入的剧本节拍（不预置，现场/视频里逐条输入）
 
 ### 节拍 1 —— 女佣→雇主 · 分级/升级（故事 A 高光）
-**Rosa 语音/文字输入（Tagalog 混说）**：
-> "Ma'am, si Ah Ma po, ayaw kumain masyado today, tanghali kalahati lang… tapos sabi niya medyo nahihilo siya."
+> 场景：**工作日（如周四），丽珍不在 Ah Ma 身边。** Rosa 是当天唯一看着老人的人。
+
+**Rosa 语音/文字输入（English/Singlish）**：
+> "Ma'am, Ah Ma today no mood to eat, lunch eat small small only half bowl… and she say she feel a bit dizzy."
 
 **系统应产出**：
 - restored_text：Ah Ma 今天没什么胃口，午饭只吃了半碗，还说有点头晕
@@ -79,11 +88,13 @@
 - 老人端语音告知："这件事我需要告诉你女儿"
 
 ### 节拍 2 —— 雇主→女佣 · 拆解 + 确认闭环（故事 B）
-**丽珍输入（中文）**：
-> "今晚四个人吃饭，妈妈的药记得饭前吃，[6] 点要炒菜就早点准备。"
+> 场景：**周五**，丽珍一家四口（丽珍 + 女婿 + 2 个外孙）晚上来 Ah Ma 家吃团聚饭。丽珍提前给 Rosa 发消息交代备餐 + 老人用药——这正是访谈里"6 点炒菜就 5 点告诉她"的提前量场景。
 
-**系统应产出**（tasks + Tagalog helper_message + confirmation_items）：
-- ☐ 今晚 [4] 人晚饭（[18:30]）
+**丽珍输入（中文）**：
+> "今晚我们四个人过来吃饭，妈妈的药记得饭前吃，[6] 点要炒菜就早点准备。"
+
+**系统应产出**（tasks + Tagalog/英语 helper_message + confirmation_items）：
+- ☐ 今晚 [4] 人来吃晚饭（[18:30]）
 - ☐ Ah Ma [降压药] —— 饭前（约 [17:30]）
 - ☐ [17:00] 开始备菜（[18:00] 炒，提前 1 小时）
 - Rosa 逐项打勾确认；丽珍端看到的不再是"嗯"，是三项被接住
