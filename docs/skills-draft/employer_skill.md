@@ -19,7 +19,8 @@
 - 本轮雇主的中文指令
 
 ## 步骤
-1. **语义理解**：读懂这句话里其实包含几件独立的事，以及它隐含的目标（如"四人吃饭"隐含"要有够 4 人的菜"）。
+1. **语义理解**：读懂这句话里其实包含几件独立的事，以及它隐含的信息。
+   - **注意人数**："我们四个人过来吃饭"指的是**4 位客人 + 老人本人 = 5 人**一起吃饭（老人住这儿、也在饭桌上），备餐按 **5 人份**，别照字面只算 4 人。（若不确定女佣自己是否同桌，可在细节里标注。）
 2. **任务分解**：拆成**动作导向**的可执行项——每项是一句"该做什么"（去买菜 / 开始备菜 / 让 Ah Ma 吃药 / 开饭），不是笼统复述。
    - **补出必需的前置动作**：为完成指令所必需、但雇主没明说的步骤可以补出（如为今晚的饭先去买菜）。
    - 每项挂**明确时间节点**；确实灵活的项（如备菜）可以 `time: null` 不挂死时间，只给个大致提示。
@@ -42,11 +43,11 @@
 ## 示例（周五团聚备餐场景：丽珍一家不同住，晚上过来 Ah Ma 家吃饭）
 输入："今晚我们四个人过来吃饭，妈妈的药记得饭前吃，6点要炒菜就早点准备"
 输出：
-{"understood": "今晚丽珍一家4人来Ah Ma家吃晚饭；需备够4人的菜；Ah Ma降压药饭前吃；18:00炒菜、18:30前开饭，需提前买菜备菜",
+{"understood": "今晚丽珍一家4人来Ah Ma家吃晚饭，连Ah Ma共5人，需备够5人的菜；Ah Ma降压药饭前吃；18:00炒菜、18:30前开饭，需提前买菜备菜",
  "tasks": [
-   {"item": "去买菜", "time": "16:00", "detail": "买今晚4人份的菜（家里不够的话）"},
+   {"item": "去买菜", "time": "16:00", "detail": "买今晚5人份的菜（4位客人+Ah Ma；家里不够的话）"},
    {"item": "开始备菜", "time": null, "detail": "洗菜切菜，时间灵活，18:00 要能下锅炒"},
    {"item": "让 Ah Ma 吃降压药", "time": "17:30", "detail": "饭前吃"},
-   {"item": "开饭", "time": "18:30", "detail": "18:00 炒菜，18:30 前 4 人开饭"}],
- "helper_message": "Hi Rosa, for tonight (family coming over, 4 people for dinner): (1) around 4 PM go buy the groceries for 4 (if not enough at home); (2) then start preparing the food, take your time, just need to be ready to cook by 6 PM; (3) at 5:30 PM give Ah Ma her blood pressure medicine, before she eats; (4) have dinner ready by 6:30 PM. No rush ya, thank you!",
- "confirmation_items": ["16:00 去买菜", "备菜（洗切，时间灵活）", "17:30 Ah Ma 吃药（饭前）", "18:30 前开饭"]}
+   {"item": "开饭", "time": "18:30", "detail": "18:00 炒菜，18:30 前 5 人开饭"}],
+ "helper_message": "Hi Rosa, for tonight (family coming over — 4 guests plus Ah Ma, so 5 people for dinner): (1) around 4 PM go buy groceries for 5 (if not enough at home); (2) then start preparing the food, take your time, just need to be ready to cook by 6 PM; (3) at 5:30 PM give Ah Ma her blood pressure medicine, before she eats; (4) have dinner ready by 6:30 PM. No rush ya, thank you!",
+ "confirmation_items": ["16:00 去买菜（5人份）", "备菜（洗切，时间灵活）", "17:30 Ah Ma 吃药（饭前）", "18:30 前开饭"]}
