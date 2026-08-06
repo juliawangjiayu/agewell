@@ -73,9 +73,9 @@
 **系统应产出**：
 - restored_text：Ah Ma 今天没什么胃口，午饭只吃了半碗，还说有点头晕
 - grade：`escalate` 🔴
-- notify：`["doctor", "child"]`
+- notify：`["doctor", "family"]`
 - reason：头晕与 [Day3] 上调降压药 [Amlodipine] 时间关联；食欲下降 + 头晕症状组合
-- outputs.child / outputs.doctor / outputs.helper：见 spec 第七节三方文本
+- outputs.family / outputs.doctor / outputs.helper：见 spec 第七节三方文本（family = 家人，此家庭里是女儿丽珍）
 - 老人端语音告知："这件事我需要告诉你女儿"
 
 ### 节拍 2 —— 雇主→女佣 · 拆解 + 确认闭环（故事 B）
@@ -94,6 +94,40 @@
 ### 节拍 4 —— 收尾（可选，视频里带过）
 - 每周摘要（语音）："这周你女儿知道了两件事：你胃口不太好，还有说有点头晕。"
 - 医生端一页结构化摘要（outputs.doctor 的完整版）
+
+---
+
+## 三·五、三级分级示例剧本（demo 分别展示 record / routine / escalate）
+
+同一个 Ah Ma 家庭，用三句不同的女佣观察，展示系统对**三种严重度**的不同处理——证明"绝大多数静默记录、只在该打断时才打断"是产品主张，不是能力不足。演示前先"重置"到干净种子状态。
+
+### 剧本 A · record（记录，不通知）——占 ~85%，体现防误报
+**Rosa 输入（Singlish）**：
+> "Ah Ma today lunch eat a bit less lah, but she ok, now watching TV."
+
+**系统产出**：灰色标签 **记录** · 通知：无 · 为什么：单次轻微波动，无持续性、无用药关联。
+- outputs.helper（只回女佣）："好的 Rosa，我记下了，先观察就好，不用担心。"
+- **家人端/医生端：什么都不弹。** ← demo 里要特意指出："看，它没有打扰任何人。"
+
+### 剧本 B · routine（常规通报，通知家人）——持续性改变
+**Rosa 输入（Singlish）**：
+> "Ah Ma still no appetite today, half bowl only. This week third time already."
+> （上下文：本周已 2 次食欲下降）
+
+**系统产出**：黄色标签 **常规通报** · 通知：家人 · 为什么：本周第 3 次持续性食欲下降，需家人知情但不紧急。
+- outputs.family："阿姨这周有三次胃口不太好，不是紧急情况，但想让你知道，今晚回家可以留意一下她吃得怎么样。"
+- outputs.helper："好的 Rosa，你观察得很到位，接下来几天继续帮我留意她吃多少。"
+- **医生端：不弹**（还没到临床升级）。
+
+### 剧本 C · escalate（即时升级，医生+家人）——即节拍 1 高光
+**Rosa 输入（Singlish）**：
+> "she got no mood to eat, only eat small small, and she say she feel a bit dizzy."
+> （上下文：Day3 刚调降压药）
+
+**系统产出**：红色标签 **即时升级** · 通知：医生 + 家人 · 为什么：头晕与调药时间关联 + 症状组合。
+- 三段差异化输出（family / doctor / helper）全出；老人端语音告知（视频）。
+
+> **三张并排**（record 灰 / routine 黄 / escalate 红）是回答"你的分级准不准 / 会不会天天误报"的最佳一屏：同一个人、同类主诉（食欲），系统只在证据够时才升级。
 
 ---
 
