@@ -5,7 +5,9 @@ All functions accept a psycopg3 connection so callers can control transactions.
 """
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
+
 import psycopg
 
 
@@ -66,6 +68,41 @@ def upsert_employer_profile(
     return dict(row)
 
 
+def _normalize_medications(meds: Any) -> list[dict]:
+    """
+    统一用药表字段名。前端 onboard 表单发的是 name/notes，seed 发的是 drug/note，
+    两边都规整成 drug/note，避免卡片渲染时药名为空。
+    """
+    if not isinstance(meds, list):
+        return []
+    out = []
+    for m in meds:
+        if not isinstance(m, dict):
+            continue
+        item = dict(m)
+        item["drug"] = m.get("drug") or m.get("name") or ""
+        item["note"] = m.get("note") or m.get("notes") or ""
+        item.pop("name", None)
+        item.pop("notes", None)
+        out.append(item)
+    return out
+
+
+def _coerce_date(value: Any) -> Any:
+    """
+    last_med_change_date 列是 DATE 类型，但 onboard 表单可能传进
+    「本周三（Day3）」这种自由文本。存不进去就当没有，不要让整次 onboard 失败。
+    """
+    if not value:
+        return None
+    if isinstance(value, str):
+        try:
+            date.fromisoformat(value.strip())
+        except ValueError:
+            return None
+    return value
+
+
 def upsert_elder_profile(
     conn: psycopg.Connection, family_id: int, data: dict[str, Any]
 ) -> dict:
@@ -76,8 +113,8 @@ def upsert_elder_profile(
         """
         INSERT INTO elder_profiles
             (family_id, name, age, conditions, baseline_notes,
-             medications, followups, last_med_change_date)
-        VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s)
+             medications, followups, last_med_change_date, last_med_change)
+        VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s, %s::jsonb)
         RETURNING *
         """,
         (
@@ -86,9 +123,10 @@ def upsert_elder_profile(
             data.get("age"),
             data.get("conditions", []),
             data.get("baseline_notes"),
-            __json(data.get("medications", [])),
+            __json(_normalize_medications(data.get("medications", []))),
             __json(data.get("followups", {})),
-            data.get("last_med_change_date"),
+            _coerce_date(data.get("last_med_change_date")),
+            __json(data.get("last_med_change") or {}),
         ),
     ).fetchone()
     conn.commit()

@@ -20,15 +20,26 @@ const DEFAULT_FORM: OnboardForm = {
     conditions: ["高血压", "2型糖尿病"],
     baseline_notes: "独住 HDB，与 Rosa 同住；平时三餐正常，能自己走动，晚饭后爱看电视。",
     medications: [
-      { name: "Amlodipine（氨氯地平）", timing: "早饭后", time: "08:00", notes: "降压" },
-      { name: "Metformin（二甲双胍）", timing: "早、晚饭后", time: "08:00 / 19:00", notes: "降糖" },
-      { name: "Losartan（氯沙坦）", timing: "早饭后", time: "08:00", notes: "降压" },
+      { drug: "Amlodipine（氨氯地平）", timing: "早饭后", time: "08:00", note: "降压" },
+      {
+        drug: "Metformin（二甲双胍）",
+        timing: "早、晚饭后",
+        time: "08:00 / 19:00",
+        note: "降糖；标准建议随餐或饭后服用，以减少肠胃反应",
+      },
+      { drug: "Losartan（氯沙坦）", timing: "早饭后", time: "08:00", note: "降压" },
     ],
     followups: {
       clinic: "XX Polyclinic",
       interval: "每 3 个月",
       next_date: "本周五",
-      last_med_change_date: "本周三（Day3）",
+    },
+    // 必须说明改的是哪一个药——只给日期的话，医生端会把整张用药表都列出来
+    last_med_change: {
+      drug: "Amlodipine（氨氯地平）",
+      from: "5mg",
+      to: "10mg",
+      date: "本周三",
     },
   },
   caregiver: {
@@ -178,17 +189,52 @@ export function OnboardFormPanel({ onSubmit, loading }: Props) {
             />
           </div>
           <div className="form-group">
-            <label>最近调药日期（如有）</label>
+            <label>最近调药：哪个药（如有）</label>
             <input
-              value={form.elder.followups.last_med_change_date ?? ""}
+              value={form.elder.last_med_change?.drug ?? ""}
               onChange={(e) =>
-                setField("elder", "followups", {
-                  ...form.elder.followups,
-                  last_med_change_date: e.target.value,
+                setField("elder", "last_med_change", {
+                  ...form.elder.last_med_change,
+                  drug: e.target.value,
                 })
               }
-              placeholder="例：本周三"
+              placeholder="例：Amlodipine（氨氯地平）"
             />
+          </div>
+          <div className="form-group">
+            <label>最近调药：怎么调的 / 哪天</label>
+            <div className="form-row-inline">
+              <input
+                value={form.elder.last_med_change?.from ?? ""}
+                onChange={(e) =>
+                  setField("elder", "last_med_change", {
+                    ...form.elder.last_med_change,
+                    from: e.target.value,
+                  })
+                }
+                placeholder="原剂量，如 5mg"
+              />
+              <input
+                value={form.elder.last_med_change?.to ?? ""}
+                onChange={(e) =>
+                  setField("elder", "last_med_change", {
+                    ...form.elder.last_med_change,
+                    to: e.target.value,
+                  })
+                }
+                placeholder="新剂量，如 10mg"
+              />
+              <input
+                value={form.elder.last_med_change?.date ?? ""}
+                onChange={(e) =>
+                  setField("elder", "last_med_change", {
+                    ...form.elder.last_med_change,
+                    date: e.target.value,
+                  })
+                }
+                placeholder="例：本周三"
+              />
+            </div>
           </div>
           <div className="onboard-btn-row">
             <button className="btn-secondary" onClick={() => setStep("employer")}>

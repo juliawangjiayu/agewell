@@ -35,6 +35,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [onboarding, setOnboarding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // agent 上一轮提出的澄清问题；下一条消息带回去，才能形成多轮闭环
+  const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -101,7 +103,14 @@ export default function App() {
     setLoading(true);
 
     try {
-      const result: ApiResult = await api.message(slug, text, skillOn, role);
+      const result: ApiResult = await api.message(
+        slug,
+        text,
+        skillOn,
+        role,
+        pendingQuestion
+      );
+      setPendingQuestion(nextPendingQuestion(result));
       const botMsg = buildBotMessage(result, role);
       setMessages((prev) => [...prev, botMsg]);
     } catch (e) {
@@ -128,6 +137,7 @@ export default function App() {
 
     try {
       const result = await api.audio(slug, blob, skillOn, role);
+      setPendingQuestion(nextPendingQuestion(result));
       const transcript = result.transcript ?? "";
 
       // Update user message with transcript
@@ -154,6 +164,7 @@ export default function App() {
     if (!confirm("重置会把示例家庭恢复到种子状态（清除本次产生的观察记录）。确认？"))
       return;
     setError(null);
+    setPendingQuestion(null);
     try {
       await api.reset(slug);
       await loadProfiles(slug);
@@ -337,6 +348,13 @@ export default function App() {
   );
 }
 
+// ─── Helper: carry the agent's question into the next turn ───────────────────
+function nextPendingQuestion(result: ApiResult): string | null {
+  if (result.type !== "helper") return null;
+  const qs = result.clarifying_questions;
+  return qs && qs.length > 0 ? qs.join(" / ") : null;
+}
+
 // ─── Helper: turn API result into a bot chat message ─────────────────────────
 function buildBotMessage(result: ApiResult, _senderRole: Role): ChatMessage {
   let content = "";
@@ -351,13 +369,18 @@ function buildBotMessage(result: ApiResult, _senderRole: Role): ChatMessage {
           : result.grade === "routine"
           ? "🟡 常规通报"
           : "⚪ 记录";
-      content = `${gradeLabel}：${result.reason}`;
+      content = result.clarifying_questions?.length
+        ? `💬 ${result.clarifying_questions.join(" / ")}`
+        : `${gradeLabel}：${result.reason}`;
     }
   } else {
     if (!result.skill_on) {
       content = `[通用助手] ${result.helper_message}`;
     } else {
-      content = `已拆解为 ${result.tasks?.length ?? 0} 项任务，等待 Rosa 逐项确认。`;
+      const n = result.tasks?.length ?? 0;
+      content = result.conflicts?.length
+        ? `⚠️ 指令与用药表不一致，已拆解为 ${n} 项任务并向丽珍确认。`
+        : `已拆解为 ${n} 项任务，等待 Rosa 逐项确认。`;
     }
   }
 

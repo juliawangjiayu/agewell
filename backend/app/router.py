@@ -45,6 +45,7 @@ def route(
     skill_on: bool = True,
     role: str | None = None,   # explicit override: "helper" | "employer"
     llm: LLMCallable | None = None,
+    pending_question: str | None = None,
 ) -> HelperResult | EmployerResult:
     """
     Route a message to the correct orchestrator.
@@ -74,4 +75,5 @@ def route(
             profiles=profiles,
             skill_on=skill_on,
             llm=llm,
+            pending_question=pending_question,
         )

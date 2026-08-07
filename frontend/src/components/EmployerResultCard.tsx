@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { EmployerResult, Task } from "../types";
-import { CheckSquare, Square, Clock } from "lucide-react";
+import { CheckSquare, Square, Clock, AlertTriangle } from "lucide-react";
 
 interface Props {
   result: EmployerResult;
@@ -8,7 +8,7 @@ interface Props {
 }
 
 export function EmployerResultCard({ result, onConfirmTask }: Props) {
-  const { skill_on, understood, tasks, helper_message } = result;
+  const { skill_on, understood, conflicts, tasks, helper_message } = result;
   const [localTasks, setLocalTasks] = useState<Task[]>(
     tasks.map((t) => ({ ...t, confirmed: false }))
   );
@@ -41,6 +41,24 @@ export function EmployerResultCard({ result, onConfirmTask }: Props) {
         <p className="result-text">{understood}</p>
       </div>
 
+      {/* 指令与用药表冲突 —— 系统当场接住，而不是让女佣照着做 */}
+      {conflicts && conflicts.length > 0 && (
+        <div className="result-section conflict-section">
+          <div className="result-section-label">
+            <AlertTriangle size={13} /> 指令与用药表不一致
+          </div>
+          {conflicts.map((c, i) => (
+            <div key={i} className="conflict-item">
+              {c.instruction && (
+                <div className="conflict-said">雇主说：{c.instruction}</div>
+              )}
+              {c.fact && <div className="conflict-fact">{c.fact}</div>}
+              {c.question && <div className="conflict-q">→ {c.question}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Task list */}
       <div className="result-section">
         <div className="result-section-label">
@@ -64,6 +82,11 @@ export function EmployerResultCard({ result, onConfirmTask }: Props) {
                 {task.time && (
                   <span className="task-time">
                     <Clock size={12} /> {task.time}
+                  </span>
+                )}
+                {task.tell_by && (
+                  <span className="task-tellby" title="提前量：该什么时候动手">
+                    提前 {task.tell_by}
                   </span>
                 )}
                 <span className="task-item-text">{task.item}</span>

@@ -37,11 +37,13 @@ export const api = {
     slug: string,
     text: string,
     skill_on: boolean,
-    role: "helper" | "employer" | "auto" = "auto"
+    role: "helper" | "employer" | "auto" = "auto",
+    /** 上一轮 agent 问的澄清问题；本轮 text 是对它的回答 */
+    pending_question?: string | null
   ) =>
     req<ApiResult>(`/families/${slug}/message`, {
       method: "POST",
-      body: JSON.stringify({ text, skill_on, role }),
+      body: JSON.stringify({ text, skill_on, role, pending_question }),
     }),
 
   /** Upload audio file */

@@ -4,8 +4,12 @@ Seed script: pre-populate the Ah Ma / Rosa / 丽珍 demo family.
 Run once after Railway Postgres is up:
     python -m app.seed
 
-Day3 = last_med_change_date (Amlodipine 5→10mg, i.e. 3 days before demo Day5).
-Pre-inserts 2 'record' observations so Day5 escalate has context.
+DAY3 = 调药日（Amlodipine 5→10mg），今天往前推 2 天。
+预置 2 条 'record' 观察（DAY1 / DAY4），让当天的升级判断有上下文可依。
+
+注意时间线：食欲下降起于 DAY1，**早于** DAY3 的调药。
+这是有意为之——判断层必须能区分「调药后新出现的症状」（头晕）和
+「调药前已存在的既有趋势」（食欲下降），不能把两者一起归因到那次调药。
 """
 from __future__ import annotations
 
@@ -23,9 +27,19 @@ from app.db import apply_schema, get_connection
 # ---------------------------------------------------------------------------
 
 TODAY = date.today()
-DAY1 = TODAY - timedelta(days=4)   # 周一
-DAY3 = TODAY - timedelta(days=2)   # 周三 (med change)
-DAY4 = TODAY - timedelta(days=1)   # 周四
+DAY1 = TODAY - timedelta(days=4)   # 第一次食欲下降
+DAY3 = TODAY - timedelta(days=2)   # 调药日
+DAY4 = TODAY - timedelta(days=1)   # 第二次食欲下降
+
+
+def _next_friday(d: date) -> date:
+    """今天是周五就返回今天，否则返回下一个周五。"""
+    return d + timedelta(days=(4 - d.weekday()) % 7)
+
+
+# 复诊日必须是「未来的某个周五」——原本写死 str(TODAY)，
+# demo 在非周五打开时，剧本里「周五复诊 + 丽珍来接」就对不上了。
+NEXT_FOLLOWUP = _next_friday(TODAY)
 
 FAMILY_SLUG = "ah-ma"
 
@@ -36,14 +50,25 @@ ELDER = {
     "baseline_notes": "独自住在自己的 HDB，与 Rosa（住家女佣）同住；平时三餐正常，能自己走动，晚饭后爱看电视",
     "medications": [
         {"drug": "Amlodipine（氨氯地平）", "timing": "早饭后", "time": "08:00", "note": "降压"},
-        {"drug": "Metformin（二甲双胍）", "timing": "早、晚饭后", "time": "08:00/19:00", "note": "降糖，可能引起肠胃不适"},
+        {
+            "drug": "Metformin（二甲双胍）",
+            "timing": "早、晚饭后",
+            "time": "08:00/19:00",
+            "note": "降糖；标准建议随餐或饭后服用，以减少肠胃反应",
+        },
         {"drug": "Losartan（氯沙坦）", "timing": "早饭后", "time": "08:00", "note": "降压"},
     ],
     "followups": {
-        "clinic": "Polyclinic",
+        "clinic": "XX Polyclinic",
         "interval": "每3个月",
-        "next_date": str(TODAY),  # 今天复诊（也是丽珍来接的日子）
-        "last_date": str(DAY3),
+        "next_date": str(NEXT_FOLLOWUP),
+    },
+    # 只有 Amlodipine 变动过。不写明是哪一个药，模型就只能把整张用药表抄给医生。
+    "last_med_change": {
+        "drug": "Amlodipine（氨氯地平）",
+        "from": "5mg",
+        "to": "10mg",
+        "date": str(DAY3),
     },
     "last_med_change_date": str(DAY3),
 }

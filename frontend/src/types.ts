@@ -1,9 +1,12 @@
 // ─── Profile types ────────────────────────────────────────────────────────────
 
 export interface Medication {
-  name: string;
+  /** 后端规范字段；onboard 表单历史上发的是 name/notes，两者都容忍 */
+  drug?: string;
+  name?: string;
   timing: string;
   time: string;
+  note?: string;
   notes?: string;
 }
 
@@ -14,6 +17,14 @@ export interface Followup {
   last_med_change_date?: string;
 }
 
+/** 最近一次调药：必须说明是哪一个药、怎么调的，否则医生端会把整张用药表都列出来 */
+export interface MedChange {
+  drug?: string;
+  from?: string;
+  to?: string;
+  date?: string;
+}
+
 export interface ElderProfile {
   name: string;
   age?: number;
@@ -21,6 +32,8 @@ export interface ElderProfile {
   baseline_notes?: string;
   medications: Medication[];
   followups: Followup;
+  last_med_change?: MedChange;
+  last_med_change_date?: string;
 }
 
 export interface EmployerProfile {
@@ -51,9 +64,11 @@ export type Grade = "record" | "routine" | "escalate";
 export type Role = "helper" | "employer";
 
 export interface HelperOutputs {
-  family?: string;
-  doctor?: string;
-  helper?: string;
+  family?: string | null;
+  doctor?: string | null;
+  helper?: string | null;
+  /** 给老人的一句话——系统把事情说出去时，她是知情的 */
+  elder?: string | null;
   raw?: string; // skill_on=false: plain response
 }
 
@@ -65,14 +80,25 @@ export interface HelperResult {
   grade: Grade;
   notify: string[];
   reason: string;
+  /** 0–2 条；只在答案会改变分级、且女佣当场答得上来时才问 */
+  clarifying_questions?: string[];
   outputs: HelperOutputs;
 }
 
 export interface Task {
   time?: string | null;
+  /** 提前量：该在什么时候动手，对应「6点炒菜就5点告诉她」 */
+  tell_by?: string | null;
   item: string;
   detail?: string;
   confirmed: boolean;
+}
+
+/** 指令与用药表冲突：雇主说错了，系统当场接住并回问 */
+export interface Conflict {
+  instruction?: string;
+  fact?: string;
+  question?: string;
 }
 
 export interface EmployerResult {
@@ -80,6 +106,7 @@ export interface EmployerResult {
   skill_on: boolean;
   raw_instruction: string;
   understood: string;
+  conflicts?: Conflict[];
   tasks: Task[];
   helper_message: string;
   confirmation_items: string[];

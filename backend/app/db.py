@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS elder_profiles (
     medications         JSONB NOT NULL DEFAULT '[]',
     followups           JSONB NOT NULL DEFAULT '{}',
     last_med_change_date DATE,
+    last_med_change     JSONB NOT NULL DEFAULT '{}',
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -96,10 +97,18 @@ CREATE TABLE IF NOT EXISTS task_breakdowns (
 """
 
 
+# CREATE TABLE IF NOT EXISTS 不会给已存在的表补列，线上库需要单独迁移。
+MIGRATION_SQL = """
+ALTER TABLE elder_profiles
+    ADD COLUMN IF NOT EXISTS last_med_change JSONB NOT NULL DEFAULT '{}';
+"""
+
+
 def apply_schema() -> None:
     """Create all tables if they don't exist. Safe to run repeatedly."""
     with get_connection() as conn:
         conn.execute(SCHEMA_SQL)
+        conn.execute(MIGRATION_SQL)
         conn.commit()
 
 

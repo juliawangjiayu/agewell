@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import os
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from typing import Any, Literal
 
 from dotenv import load_dotenv
@@ -50,6 +51,8 @@ async def lifespan(app: FastAPI):
         print(f"[startup] Seed failed: {e}")
     yield
 
+
+_STARTED_AT = datetime.now(timezone.utc).isoformat()
 
 app = FastAPI(title="AgeWell 照护协同 API", version="0.1.0", lifespan=lifespan)
 
@@ -113,6 +116,8 @@ class MessageRequest(BaseModel):
     text: str
     skill_on: bool = True
     role: Literal["helper", "employer", "auto"] = "auto"
+    # 上一轮 agent 提出的澄清问题；本轮 text 是对它的回答。
+    pending_question: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -158,6 +163,7 @@ def _result_to_dict(result: HelperResult | EmployerResult) -> dict:
             "grade": result.grade,
             "notify": result.notify,
             "reason": result.reason,
+            "clarifying_questions": result.clarifying_questions,
             "outputs": result.outputs,
         }
     else:
@@ -166,6 +172,7 @@ def _result_to_dict(result: HelperResult | EmployerResult) -> dict:
             "skill_on": result.skill_on,
             "raw_instruction": result.raw_instruction,
             "understood": result.understood,
+            "conflicts": result.conflicts,
             "tasks": result.tasks,
             "helper_message": result.helper_message,
             "confirmation_items": result.confirmation_items,
@@ -178,7 +185,16 @@ def _result_to_dict(result: HelperResult | EmployerResult) -> dict:
 
 @app.get("/healthz")
 def healthz():
-    return {"status": "ok"}
+    """线上跑的到底是哪个 commit —— 部署链路排查全靠这个。"""
+    return {
+        "status": "ok",
+        "version": (
+            os.getenv("RAILWAY_GIT_COMMIT_SHA")
+            or os.getenv("GIT_COMMIT_SHA")
+            or "dev"
+        )[:7],
+        "started_at": _STARTED_AT,
+    }
 
 
 @app.post("/families/{slug}/onboard", status_code=201)
@@ -222,10 +238,14 @@ def send_message(slug: str, body: MessageRequest) -> dict[str, Any]:
             skill_on=body.skill_on,
             role=role,
             llm=_get_llm(),
+            pending_question=body.pending_question,
         )
 
         # Persist to DB
         if isinstance(result, HelperResult):
+            # 还在等澄清回答的半成品判断不落库，否则会污染后续轮次的上下文。
+            if result.clarifying_questions and result.grade == "record":
+                return _result_to_dict(result)
             repo.save_observation(conn, fid, {
                 "raw_text": result.raw_text,
                 "restored_text": result.restored_text,

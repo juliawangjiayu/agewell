@@ -1,5 +1,5 @@
 import React from "react";
-import type { Profiles } from "../types";
+import type { ElderProfile, Profiles } from "../types";
 import { User, Heart, Utensils } from "lucide-react";
 
 interface Props {
@@ -38,6 +38,19 @@ function Row({ label, value }: { label: string; value?: string | null }) {
   );
 }
 
+/**
+ * 「上次调药」是整个升级判断的锚点，卡片上必须看得见。
+ * 后端把它放在 elder 顶层（旧版本曾放在 followups 里），两处都读一下。
+ */
+function medChangeLabel(elder: ElderProfile): string {
+  const c = elder.last_med_change;
+  if (c?.drug) {
+    const delta = c.from && c.to ? ` ${c.from}→${c.to}` : "";
+    return `${c.date ?? ""} ${c.drug}${delta}`.trim();
+  }
+  return elder.last_med_change_date ?? elder.followups?.last_med_change_date ?? "";
+}
+
 export function ProfileCards({ profiles }: Props) {
   const { employer, elder, caregiver } = profiles;
 
@@ -74,18 +87,19 @@ export function ProfileCards({ profiles }: Props) {
               <div className="profile-label">用药</div>
               {elder.medications.map((m, i) => (
                 <div key={i} className="med-row">
-                  <span className="med-name">{m.name}</span>
+                  <span className="med-name">{m.drug ?? m.name}</span>
                   <span className="med-timing">{m.timing} {m.time}</span>
                 </div>
               ))}
             </div>
           )}
-          {elder.followups?.next_date && (
+          {(elder.followups?.next_date || medChangeLabel(elder)) && (
             <div className="profile-note">
-              复诊：{elder.followups.next_date}
-              {elder.followups.last_med_change_date && (
+              {elder.followups?.next_date && <>复诊：{elder.followups.next_date}</>}
+              {medChangeLabel(elder) && (
                 <span className="med-change">
-                  {" "}· 上次调药：{elder.followups.last_med_change_date}
+                  {elder.followups?.next_date ? " · " : ""}
+                  上次调药：{medChangeLabel(elder)}
                 </span>
               )}
             </div>
