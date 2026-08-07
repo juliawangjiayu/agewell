@@ -107,12 +107,16 @@ def transcribe_audio(
     audio_b64 = base64.b64encode(wav_bytes).decode()
     audio_url = f"data:audio/wav;base64,{audio_b64}"
 
+    print(f"[STT DEBUG] raw_pcm={len(raw_pcm)} wav={len(wav_bytes)} b64_prefix={audio_b64[:30]}")
+
     with httpx.Client(timeout=DEFAULT_TIMEOUT) as client:
         resp = client.post(
             f"{MERALION_API_BASE}/v1/audio/transcriptions",
             headers={"Authorization": f"Bearer {api_key}"},
             json={"audio_url": audio_url},
         )
+
+    print(f"[STT DEBUG] status={resp.status_code} body={resp.text[:200]!r}")
 
     if resp.status_code != 200:
         raise RuntimeError(
