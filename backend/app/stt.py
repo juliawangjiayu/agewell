@@ -8,7 +8,6 @@ Usage:
 from __future__ import annotations
 
 import base64
-import io
 import os
 import subprocess
 
@@ -35,8 +34,7 @@ def _to_wav(audio_bytes: bytes, content_type: str) -> bytes:
             "pipe:1",            # write to stdout
         ],
         input=audio_bytes,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     if proc.returncode != 0:
