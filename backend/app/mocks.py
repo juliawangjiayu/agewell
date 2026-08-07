@@ -78,8 +78,9 @@ _LLM_FIXTURES: dict[str, dict] = {
             {"item": "开始备菜", "time": "17:00", "tell_by": None,
              "detail": "洗切腌好，18:00 要能下锅"},
             {"item": "炒菜", "time": "18:00", "tell_by": "17:00", "detail": "5人份"},
-            {"item": "开饭；饭后让 Ah Ma 吃 Metformin", "time": "18:30", "tell_by": None,
-             "detail": "按用药表随餐或饭后服用，不是饭前——已在跟丽珍确认"},
+            {"item": "开饭", "time": "18:30", "tell_by": None, "detail": "5人份，摆5副餐具"},
+            {"item": "让 Ah Ma 吃降糖药 Metformin", "time": "19:00", "tell_by": None,
+             "detail": "饭后吃，不是饭前——按用药表随餐或饭后服用，已在跟丽珍确认"},
         ],
         "helper_message": (
             "Hi Rosa, tonight 4 guests + Ah Ma = 5 people, so please prepare for 5. "
@@ -92,7 +93,8 @@ _LLM_FIXTURES: dict[str, dict] = {
             "16:00 去买菜（5人份）",
             "17:00 开始备菜",
             "18:00 炒菜",
-            "18:30 开饭，饭后吃 Metformin（不是饭前）",
+            "18:30 开饭",
+            "19:00 Ah Ma 吃降糖药 Metformin（饭后，不是饭前）",
         ],
     },
 }

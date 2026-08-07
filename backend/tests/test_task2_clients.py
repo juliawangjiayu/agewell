@@ -31,8 +31,10 @@ class TestMockLLM:
         raw = self._call("feel a bit dizzy")
         data = json.loads(raw)
         outputs = data["outputs"]
-        assert set(outputs.keys()) == {"family", "doctor", "helper"}
+        # 必需的三端；升级时还会多一个 elder（给老人的告知），故用子集断言
+        assert {"family", "doctor", "helper"} <= set(outputs.keys())
         assert outputs["helper"] is not None
+        assert outputs["elder"] is not None, "升级时必须同时告知老人本人"
 
     def test_record_path_returns_valid_json(self):
         raw = self._call("Ah Ma eat a bit less lah")
