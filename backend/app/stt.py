@@ -33,7 +33,7 @@ def transcribe_audio(
 
     with httpx.Client(timeout=DEFAULT_TIMEOUT) as client:
         resp = client.post(
-            f"{MERALION_API_BASE}/audio/transcription",
+            f"{MERALION_API_BASE}/v1/audio/transcriptions",
             headers={"Authorization": f"Bearer {api_key}"},
             json={"audio_url": audio_url},
         )
