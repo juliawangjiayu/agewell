@@ -1,0 +1,159 @@
+{
+  "_readme": [
+    "测试集 v1 —— 已并入 2026-08-07 的四项产品决定：",
+    "  ① 单一持续症状 + 近期调药 → 不升级，先观察（H3 = routine）",
+    "  ② 女佣端补澄清提问；雇主端不补（被问的人在不在场）",
+    "  ③ 雇主端含糊时间自己推 + 标注可改（E3）",
+    "  ④ 用药归因必须核对时间先后（H4 / H11）",
+    "三个用途：① 回归测试 ② 评委问『你准不准』时的答案 ③ PPT 一整页。",
+    "context_state 描述跑这条前需要把库置成什么状态；reset = 干净种子态。"
+  ],
+
+  "helper_cases": [
+    {
+      "id": "H1-isolated",
+      "input": "Ah Ma today lunch eat a bit less lah, but she ok, now watching TV.",
+      "context_state": "reset，且清掉预置的两条观察（真正孤立的一次）",
+      "expected_grade": "record",
+      "expected_notify": [],
+      "expected_questions": 0,
+      "note": "单次轻微波动，且『she ok, watching TV』已排除组合症状 → 没什么可问的。~85% 落这层是产品主张，不是能力不足。"
+    },
+    {
+      "id": "H2-third-time",
+      "input": "Ah Ma still no appetite today, half bowl only. This week third time already.",
+      "context_state": "reset（库里已有 2 条同类 record）",
+      "expected_grade": "routine",
+      "expected_notify": ["family"],
+      "expected_questions": 0,
+      "note": "持续性但单一症状。次数她已经说了，别再问一遍——上下文里能数出来的不许问。医生端不弹。"
+    },
+    {
+      "id": "H3-med-link-single-symptom",
+      "input": "Ah Ma only eat half her lunch again.",
+      "context_state": "reset（Day3 刚把 Amlodipine 5→10mg）",
+      "expected_grade": "routine",
+      "expected_notify": ["family"],
+      "expected_questions": 0,
+      "note": "★ 已定：不升级。只有一个既有症状在持续，没有新症状。且食欲下降在调药之前就存在 → 不能归因到 Amlodipine。检查 reason 里没有硬扯用药。这条守住『85% 不打扰』的主张。"
+    },
+    {
+      "id": "H4-combo-timeline",
+      "input": "she got no mood to eat, only eat small small, and she say she feel a bit dizzy.",
+      "context_state": "reset（Day1/Day4 食欲下降 + Day3 调药）",
+      "expected_grade": "escalate",
+      "expected_notify": ["doctor", "family"],
+      "expected_questions": 0,
+      "note": "★ 故事高光。必须满足：① 只提 Amlodipine，不列三种药；② 头晕=新出现、在调药之后 → 时间关联成立；③ 食欲下降=调药之前已存在 → 明确写成独立趋势、尚无解释，不能和头晕合并成一句因果。这是『推理时间方向』的现场证据。"
+    },
+    {
+      "id": "H5-crosslingual",
+      "input": "Ma'am, Ah Ma whole day quiet quiet, don't want talk, but eat normal.",
+      "context_state": "reset",
+      "expected_grade": "record",
+      "expected_notify": [],
+      "expected_questions": 0,
+      "note": "跨语言语义还原：'quiet quiet' → 情绪/社交活跃度下降。单次、无关联 → 不升级。"
+    },
+    {
+      "id": "H6-trivial",
+      "input": "Ah Ma say the soup today too salty.",
+      "context_state": "reset",
+      "expected_grade": "record",
+      "expected_notify": [],
+      "expected_questions": 0,
+      "note": "彻底琐碎，必须留在 record，而且不许问任何问题。防误报的反面证据。"
+    },
+    {
+      "id": "H7-acute-out-of-scope",
+      "input": "Ah Ma fall down in the toilet, now she cannot stand up.",
+      "context_state": "reset",
+      "expected_grade": "escalate",
+      "expected_notify": ["family"],
+      "expected_questions": 0,
+      "note": "★ 系统必须承认超出判断范围，helper 输出直接指向紧急按钮/995，不能假装做临床判断，也不能在这种时候问问题。承认边界是加分项。"
+    },
+    {
+      "id": "H8-ambiguous-ask",
+      "input": "Ah Ma not so good today.",
+      "context_state": "reset",
+      "expected_grade": "record",
+      "expected_notify": [],
+      "expected_questions": [1, 2],
+      "note": "★ 已定：补澄清提问。必须问『哪方面』这类当场能答、且会改变分级的问题。同时仍要给一个当前证据下的判断（record），不能因为没问到就拒绝分级。"
+    },
+    {
+      "id": "H8b-ambiguous-followup",
+      "input": "Her walking, she hold the wall today, never like that before.",
+      "context_state": "接在 H8 之后（上下文带着上一轮的提问）",
+      "expected_grade": "escalate",
+      "expected_notify": ["doctor", "family"],
+      "note": "★ 多轮闭环：同一天的模糊输入，问一句之后升到 escalate。这一对（H8 → H8b）是『澄清提问真的改变了结果』的证据，值得单独录进视频。"
+    },
+    {
+      "id": "H9-no-med-link",
+      "input": "Ah Ma feel a bit dizzy when she stand up this morning.",
+      "context_state": "reset 后手动清掉 last_med_change（模拟近期没调过药）",
+      "expected_grade": "routine",
+      "expected_notify": ["family"],
+      "expected_questions": [0, 1],
+      "note": "反向验证：没有调药锚点时，不能牵强归因到药物。检查 reason 里有没有硬扯用药。"
+    },
+    {
+      "id": "H10-improvement",
+      "input": "Ah Ma today eat finish whole bowl, mood also better.",
+      "context_state": "reset",
+      "expected_grade": "record",
+      "expected_notify": [],
+      "expected_questions": 0,
+      "note": "好转也是观察。检查系统不会把『变化』一律当成风险。"
+    },
+    {
+      "id": "H11-symptom-precedes-change",
+      "input": "Ah Ma knee pain again today, same like before.",
+      "context_state": "reset（Day3 调过 Amlodipine）",
+      "expected_grade": "record",
+      "expected_notify": [],
+      "expected_questions": 0,
+      "note": "★ 归因纪律的负例：一个和调药完全无关的既有症状，撞上『最近调过药』这个上下文。系统绝不能因为『最近调过药』就把它挂上去。"
+    }
+  ],
+
+  "employer_cases": [
+    {
+      "id": "E1-med-conflict",
+      "input": "今晚我们四个人过来吃饭，妈妈的药记得饭前吃，6点要炒菜就早点准备。",
+      "context_state": "reset",
+      "expected_conflicts": 1,
+      "expected_task_count": 4,
+      "note": "★ killer moment。必须满足全部五条：① conflicts 点出 Metformin 的标准建议是随餐/饭后；② 措辞是核对不是纠错（不能出现『你说错了』）；③ 降压药饭前饭后都行，不许一起报成冲突；④ 人数算成 5（4 客人 + Ah Ma）；⑤ 买菜是推断出的前置动作，且带 tell_by 提前量。"
+    },
+    {
+      "id": "E2-no-conflict",
+      "input": "明天早上带妈妈去楼下走走，回来记得量血压。",
+      "context_state": "reset",
+      "expected_conflicts": 0,
+      "expected_task_count": 2,
+      "note": "没有冲突时 conflicts 必须是空数组，不能为了表现而硬造一个。防过度报警的反面证据。"
+    },
+    {
+      "id": "E3-vague-time",
+      "input": "妈妈今天下午要复诊，你早点准备。",
+      "context_state": "reset",
+      "expected_conflicts": 0,
+      "note": "★ 已定：系统自己推一个具体时间，detail 里写清推算依据 + 『如果时间不对告诉我一声』。绝不能把问题弹回给雇主——她在上班，回问会把 Rosa 卡住。"
+    },
+    {
+      "id": "E4-multi-task",
+      "input": "下午帮我把妈妈的药拿去 polyclinic 配一下，顺便买点水果，晚饭简单煮就行。",
+      "context_state": "reset",
+      "expected_task_count": 3,
+      "note": "一句话三件事。检查拆解干净、不凑数、不出现『确认菜单』这类空转项。"
+    }
+  ],
+
+  "baseline_comparison": {
+    "note": "对比模式（skill_on=false）不断言具体输出，但这两条必须录进 deck。E1：裸模型会照字面备 4 人份把 Ah Ma 漏掉，而且顺着『饭前吃药』照办。H4：裸模型会把食欲下降和头晕一起归因到调药，看不出时间先后。这是『判断 ≠ 翻译』最硬的两张证据。",
+    "cases": ["E1-med-conflict", "H4-combo-timeline"]
+  }
+}
