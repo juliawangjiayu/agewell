@@ -9,14 +9,14 @@ Pre-inserts 2 'record' observations so Day5 escalate has context.
 """
 from __future__ import annotations
 
-import sys
 from datetime import date, timedelta
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
-from app.db import get_connection, apply_schema
 from app import repository as repo
+from app.db import apply_schema, get_connection
 
 # ---------------------------------------------------------------------------
 # Demo dates (relative to today = Day5 = demo day)

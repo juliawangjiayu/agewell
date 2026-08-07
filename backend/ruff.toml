@@ -1,0 +1,10 @@
+[lint]
+# 只检查真正有问题的规则，忽略纯风格类警告
+select = ["E", "F", "W", "UP"]
+ignore = [
+    "I001",   # import 排序（isort 风格，不强制）
+    "BLE001", # 宽泛 except Exception（FastAPI 启动场景可接受）
+    "B008",   # FastAPI File(...) 惯用法误报
+    "DTZ011", # date.today() 时区（demo 项目可接受）
+    "UP035",  # collections.abc Callable（已手动修）
+]

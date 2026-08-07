@@ -13,22 +13,21 @@ Endpoints:
 from __future__ import annotations
 
 import os
+from contextlib import asynccontextmanager
 from typing import Any, Literal
 
-# 加载 .env（本地开发用；Railway 生产环境直接注入环境变量）
 from dotenv import load_dotenv
+
 load_dotenv()
 
-from contextlib import asynccontextmanager
-
-from fastapi import FastAPI, HTTPException, UploadFile, File, Query
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-from app.db import get_connection, apply_schema
 from app import repository as repo
-from app.router import route, detect_role
-from app.orchestrator import HelperResult, EmployerResult
+from app.db import apply_schema, get_connection
+from app.orchestrator import EmployerResult, HelperResult
+from app.router import route
 
 # ---------------------------------------------------------------------------
 # App setup

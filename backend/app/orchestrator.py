@@ -12,14 +12,14 @@ from __future__ import annotations
 
 import json
 import os
+import pathlib
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Skill prompts (loaded from markdown at import time)
 # ---------------------------------------------------------------------------
-
-import pathlib
 
 _SKILLS_DIR = pathlib.Path(__file__).parent / "skills"
 
@@ -106,7 +106,7 @@ def _build_family_context(profiles: dict) -> str:
         )
 
     ctx_parts = [
-        f"=== 家庭上下文 ===",
+        "=== 家庭上下文 ===",
         f"老人：{elder.get('name','未知')}，{elder.get('age','?')}岁",
         f"慢病：{', '.join(elder.get('conditions') or [])}",
         f"基线备注：{elder.get('baseline_notes','无')}",
