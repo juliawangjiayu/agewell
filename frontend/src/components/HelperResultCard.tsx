@@ -1,0 +1,80 @@
+import type { HelperResult } from "../types";
+import { GradeTag } from "./GradeTag";
+import { Users, Stethoscope, MessageCircle } from "lucide-react";
+
+interface Props {
+  result: HelperResult;
+}
+
+const NOTIFY_LABEL: Record<string, string> = {
+  family: "家人",
+  doctor: "医生",
+};
+
+export function HelperResultCard({ result }: Props) {
+  const { skill_on, restored_text, grade, notify, reason, outputs } = result;
+
+  if (!skill_on) {
+    // Baseline mode: just show raw response
+    return (
+      <div className="result-card result-baseline">
+        <div className="result-baseline-label">通用助手回应（未载入 skill）</div>
+        <p className="result-raw">{outputs.raw ?? restored_text}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="result-card result-helper">
+      {/* Header row */}
+      <div className="result-header">
+        <GradeTag grade={grade} />
+        {notify?.length > 0 && (
+          <span className="notify-chips">
+            通知：{notify.map((n) => NOTIFY_LABEL[n] ?? n).join(" + ")}
+          </span>
+        )}
+      </div>
+
+      {/* Restored text */}
+      <div className="result-section">
+        <div className="result-section-label">语义还原</div>
+        <p className="result-text restored">{restored_text}</p>
+      </div>
+
+      {/* Reason */}
+      <div className="result-section">
+        <div className="result-section-label">为什么</div>
+        <p className="result-text reason">{reason}</p>
+      </div>
+
+      {/* Outputs */}
+      <div className="result-outputs">
+        {outputs.family && (
+          <div className="output-block output-family">
+            <div className="output-label">
+              <Users size={13} /> 给家人（丽珍）
+            </div>
+            <p>{outputs.family}</p>
+          </div>
+        )}
+        {outputs.doctor && (
+          <div className="output-block output-doctor">
+            <div className="output-label">
+              <Stethoscope size={13} /> 给医生
+            </div>
+            <p>{outputs.doctor}</p>
+          </div>
+        )}
+        {outputs.helper && (
+          <div className="output-block output-helper">
+            <div className="output-label">
+              <MessageCircle size={13} /> 给 Rosa
+            </div>
+            <p>{outputs.helper}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
