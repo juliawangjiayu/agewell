@@ -77,11 +77,15 @@ def transcribe_audio(
     audio_url = f"data:audio/wav;base64,{audio_b64}"
 
     with httpx.Client(timeout=DEFAULT_TIMEOUT) as client:
-        resp = client.post(
-            f"{MERALION_API_BASE}/v1/audio/transcriptions",
-            headers={"Authorization": f"Bearer {api_key}"},
-            json={"audio_url": audio_url},
-        )
+        # Try both endpoints; MERaLiON docs are inconsistent
+        for endpoint in ["/v1/audio/transcriptions", "/audio/transcription"]:
+            resp = client.post(
+                f"{MERALION_API_BASE}{endpoint}",
+                headers={"Authorization": f"Bearer {api_key}"},
+                json={"audio_url": audio_url},
+            )
+            if resp.status_code != 404:
+                break
 
     if resp.status_code != 200:
         raise RuntimeError(
