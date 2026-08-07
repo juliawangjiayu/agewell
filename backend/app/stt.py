@@ -27,11 +27,12 @@ def _to_wav(audio_bytes: bytes, content_type: str) -> bytes:
     proc = subprocess.run(
         [
             "ffmpeg",
-            "-i", "pipe:0",      # read from stdin
-            "-ar", "16000",      # 16 kHz
-            "-ac", "1",          # mono
-            "-f", "wav",         # output format
-            "pipe:1",            # write to stdout
+            "-i", "pipe:0",          # read from stdin
+            "-ar", "16000",          # 16 kHz
+            "-ac", "1",              # mono
+            "-acodec", "pcm_s16le",  # 16-bit PCM (standard WAV)
+            "-f", "wav",             # output format
+            "pipe:1",                # write to stdout
         ],
         input=audio_bytes,
         capture_output=True,
