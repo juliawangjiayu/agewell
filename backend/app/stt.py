@@ -23,6 +23,11 @@ def _to_wav(audio_bytes: bytes, content_type: str) -> bytes:
     if fmt == "wav":
         return audio_bytes
 
+    # Check ffmpeg is available
+    check = subprocess.run(["ffmpeg", "-version"], capture_output=True, check=False)
+    if check.returncode != 0:
+        raise RuntimeError(f"ffmpeg not found: {check.stderr.decode()[:200]}")
+
     # ffmpeg auto-detects input format from content
     proc = subprocess.run(
         [
