@@ -25,7 +25,6 @@ def _to_wav(audio_bytes: bytes, content_type: str) -> bytes:
         return audio_bytes
 
     # Write input to temp file, convert to temp output file
-    # (ffmpeg pipe output may lack complete WAV header)
     with tempfile.NamedTemporaryFile(suffix=f".{fmt}", delete=False) as in_f:
         in_f.write(audio_bytes)
         in_path = in_f.name
@@ -56,6 +55,13 @@ def _to_wav(audio_bytes: bytes, content_type: str) -> bytes:
     with open(out_path, "rb") as f:
         result = f.read()
     os.unlink(out_path)
+
+    # Validate WAV header
+    if len(result) < 12 or result[:4] != b"RIFF" or result[8:12] != b"WAVE":
+        raise RuntimeError(
+            f"ffmpeg output is not a valid WAV file: header={result[:12]!r}, size={len(result)}"
+        )
+
     return result
 
 
