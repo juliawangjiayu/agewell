@@ -40,7 +40,9 @@ def transcribe_audio(
 
     if resp.status_code != 200:
         raise RuntimeError(
-            f"MERaLiON API error {resp.status_code}: {resp.text[:300]}"
+            f"MERaLiON API error {resp.status_code}: {resp.text[:300]!r}"
+            f" | url={resp.url}"
+            f" | key_prefix={api_key[:8]}..."
         )
 
     data = resp.json()
