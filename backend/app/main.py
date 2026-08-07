@@ -53,11 +53,24 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="AgeWell 照护协同 API", version="0.1.0", lifespan=lifespan)
 
+_CORS_ORIGINS = [
+    "https://agewell-xi.vercel.app",
+    "https://agewell.vercel.app",
+    # 本地开发
+    "http://localhost:5173",
+    "http://localhost:3000",
+]
+# 支持通过环境变量追加额外 origin（如 Vercel preview URLs）
+_extra = os.getenv("CORS_ORIGINS", "")
+if _extra:
+    _CORS_ORIGINS += [o.strip() for o in _extra.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=_CORS_ORIGINS,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    allow_credentials=False,
 )
 
 
