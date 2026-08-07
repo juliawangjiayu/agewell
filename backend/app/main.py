@@ -258,6 +258,7 @@ async def send_audio(
     """Upload audio → STT → same pipeline as /message."""
     audio_bytes = await file.read()
     content_type = file.content_type or "audio/wav"
+    print(f"[DEBUG] Audio received: {len(audio_bytes)} bytes, content_type={content_type}")
     stt = _get_stt()
     text = stt(audio_bytes, content_type)
 
