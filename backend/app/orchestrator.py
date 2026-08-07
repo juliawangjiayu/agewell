@@ -143,12 +143,11 @@ def process_helper_observation(
     llm = llm or _get_default_llm()
     result = HelperResult(raw_text=raw_text, skill_on=skill_on)
 
+    context = _build_family_context(profiles)
     if skill_on and _HELPER_SKILL_PROMPT:
-        context = _build_family_context(profiles)
         system_msg = _HELPER_SKILL_PROMPT
         user_msg = f"{context}\n\n=== 本轮女佣观察 ===\n{raw_text}"
     else:
-        context = _build_family_context(profiles)
         system_msg = (
             "你是一个家庭照护助手。女佣发来了对老人的观察，请用中文简洁地回复她，"
             "给出你的看法和建议。"
@@ -200,12 +199,11 @@ def process_employer_instruction(
     llm = llm or _get_default_llm()
     result = EmployerResult(raw_instruction=raw_instruction, skill_on=skill_on)
 
+    context = _build_family_context(profiles)
     if skill_on and _EMPLOYER_SKILL_PROMPT:
-        context = _build_family_context(profiles)
         system_msg = _EMPLOYER_SKILL_PROMPT
         user_msg = f"{context}\n\n=== 本轮雇主指令 ===\n{raw_instruction}"
     else:
-        context = _build_family_context(profiles)
         system_msg = (
             "你是一个家庭照护助手。雇主发来了一条指令，请用中文简洁地复述并给女佣一条操作建议。"
         )
