@@ -47,12 +47,15 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Redeploy on Railway
-        run: railway redeploy --service backend --yes
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      - name: Trigger Railway deployment
+        run: |
+          curl -sf -X POST https://backboard.railway.com/graphql/v2 \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "query": "mutation Deploy($serviceId: String!, $environmentId: String!) { serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId) }",
+              "variables": {
+                "serviceId": "27232db5-a4dd-4f14-bac6-2649af675f13",
+                "environmentId": "a725ea03-900a-4d0a-9f56-9777214b6a16"
+              }
+            }'

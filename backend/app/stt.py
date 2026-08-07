@@ -8,11 +8,27 @@ Usage:
 from __future__ import annotations
 
 import base64
+import io
 import os
+
 import httpx
+from pydub import AudioSegment
 
 MERALION_API_BASE = "https://api.meralion.ai"
 DEFAULT_TIMEOUT = 60.0
+
+
+def _to_wav(audio_bytes: bytes, content_type: str) -> bytes:
+    """Convert any supported audio format to 16 kHz mono WAV."""
+    fmt = content_type.split("/")[-1].split(";")[0].strip()
+    if fmt == "wav":
+        return audio_bytes
+    # pydub auto-detects format from extension hint
+    seg = AudioSegment.from_file(io.BytesIO(audio_bytes), format=fmt or None)
+    seg = seg.set_frame_rate(16000).set_channels(1)
+    out = io.BytesIO()
+    seg.export(out, format="wav")
+    return out.getvalue()
 
 
 def transcribe_audio(
@@ -28,8 +44,9 @@ def transcribe_audio(
     if not api_key:
         raise RuntimeError("MERALION_API_KEY environment variable is not set.")
 
-    audio_b64 = base64.b64encode(audio_bytes).decode()
-    audio_url = f"data:{content_type};base64,{audio_b64}"
+    wav_bytes = _to_wav(audio_bytes, content_type)
+    audio_b64 = base64.b64encode(wav_bytes).decode()
+    audio_url = f"data:audio/wav;base64,{audio_b64}"
 
     with httpx.Client(timeout=DEFAULT_TIMEOUT) as client:
         resp = client.post(
