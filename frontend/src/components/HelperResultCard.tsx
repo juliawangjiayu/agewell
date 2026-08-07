@@ -23,11 +23,14 @@ export function HelperResultCard({ result }: Props) {
   } = result;
 
   if (!skill_on) {
-    // Baseline mode: just show raw response
+    // Baseline mode: 后端把裸模型的回复放在 outputs.helper，不是 outputs.raw。
+    // 只读 raw 会导致对比模式下整张卡片空白——而对比模式正是我们的论据。
     return (
       <div className="result-card result-baseline">
         <div className="result-baseline-label">通用助手回应（未载入 skill）</div>
-        <p className="result-raw">{outputs.raw ?? restored_text}</p>
+        <p className="result-raw">
+          {outputs.raw ?? outputs.helper ?? restored_text}
+        </p>
       </div>
     );
   }
