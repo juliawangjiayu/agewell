@@ -37,7 +37,7 @@ jobs:
       - name: Run tests (mock mode)
         env:
           USE_MOCK: "1"
-          DATABASE_URL: "postgresql://fake:fake@localhost:5432/fake"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           cd backend
           pytest tests/ -v --tb=short
