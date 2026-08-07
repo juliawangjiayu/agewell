@@ -10,6 +10,7 @@ from __future__ import annotations
 import base64
 import os
 import subprocess
+import tempfile
 
 import httpx
 
@@ -23,31 +24,39 @@ def _to_wav(audio_bytes: bytes, content_type: str) -> bytes:
     if fmt == "wav":
         return audio_bytes
 
-    # Check ffmpeg is available
-    check = subprocess.run(["ffmpeg", "-version"], capture_output=True, check=False)
-    if check.returncode != 0:
-        raise RuntimeError(f"ffmpeg not found: {check.stderr.decode()[:200]}")
+    # Write input to temp file, convert to temp output file
+    # (ffmpeg pipe output may lack complete WAV header)
+    with tempfile.NamedTemporaryFile(suffix=f".{fmt}", delete=False) as in_f:
+        in_f.write(audio_bytes)
+        in_path = in_f.name
 
-    # ffmpeg auto-detects input format from content
+    out_path = in_path.replace(f".{fmt}", "_out.wav")
+
     proc = subprocess.run(
         [
             "ffmpeg",
-            "-i", "pipe:0",          # read from stdin
-            "-ar", "16000",          # 16 kHz
-            "-ac", "1",              # mono
-            "-acodec", "pcm_s16le",  # 16-bit PCM (standard WAV)
-            "-f", "wav",             # output format
-            "pipe:1",                # write to stdout
+            "-y",
+            "-i", in_path,
+            "-ar", "16000",
+            "-ac", "1",
+            "-acodec", "pcm_s16le",
+            out_path,
         ],
-        input=audio_bytes,
         capture_output=True,
         check=False,
     )
+
+    os.unlink(in_path)
+
     if proc.returncode != 0:
         raise RuntimeError(
             f"ffmpeg failed (exit {proc.returncode}): {proc.stderr.decode()[:500]}"
         )
-    return proc.stdout
+
+    with open(out_path, "rb") as f:
+        result = f.read()
+    os.unlink(out_path)
+    return result
 
 
 def transcribe_audio(
