@@ -10,25 +10,40 @@ from __future__ import annotations
 import base64
 import io
 import os
+import subprocess
 
 import httpx
-from pydub import AudioSegment
 
 MERALION_API_BASE = "https://api.meralion.ai"
 DEFAULT_TIMEOUT = 60.0
 
 
 def _to_wav(audio_bytes: bytes, content_type: str) -> bytes:
-    """Convert any supported audio format to 16 kHz mono WAV."""
+    """Convert any supported audio format to 16 kHz mono WAV via ffmpeg."""
     fmt = content_type.split("/")[-1].split(";")[0].strip()
     if fmt == "wav":
         return audio_bytes
-    # pydub auto-detects format from extension hint
-    seg = AudioSegment.from_file(io.BytesIO(audio_bytes), format=fmt or None)
-    seg = seg.set_frame_rate(16000).set_channels(1)
-    out = io.BytesIO()
-    seg.export(out, format="wav")
-    return out.getvalue()
+
+    # ffmpeg auto-detects input format from content
+    proc = subprocess.run(
+        [
+            "ffmpeg",
+            "-i", "pipe:0",      # read from stdin
+            "-ar", "16000",      # 16 kHz
+            "-ac", "1",          # mono
+            "-f", "wav",         # output format
+            "pipe:1",            # write to stdout
+        ],
+        input=audio_bytes,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"ffmpeg failed (exit {proc.returncode}): {proc.stderr.decode()[:500]}"
+        )
+    return proc.stdout
 
 
 def transcribe_audio(
