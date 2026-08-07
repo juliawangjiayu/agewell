@@ -343,7 +343,7 @@ function buildBotMessage(result: ApiResult, _senderRole: Role): ChatMessage {
 
   if (result.type === "helper") {
     if (!result.skill_on) {
-      content = `[通用助手] ${result.outputs?.raw ?? result.restored_text}`;
+      content = `[通用助手] ${result.outputs?.helper ?? result.restored_text ?? ""}`;
     } else {
       const gradeLabel =
         result.grade === "escalate"
