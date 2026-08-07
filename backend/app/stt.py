@@ -88,6 +88,8 @@ def transcribe_audio(
             f"MERaLiON API error {resp.status_code}: {resp.text[:300]!r}"
             f" | url={resp.url}"
             f" | key_prefix={api_key[:8]}..."
+            f" | audio_size={len(wav_bytes)}"
+            f" | audio_b64_prefix={audio_b64[:50]}..."
         )
 
     data = resp.json()
