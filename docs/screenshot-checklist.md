@@ -66,24 +66,36 @@ Demo 地址：https://agewell-xi.vercel.app/
 
 ---
 
-### 🔴 S4 · 第二幕：同一句话四种结局
+### 🔴 S4 · 第二幕：同一类主诉，四种处理
 
-**这一组开始前必须点「清空」，不是「重置」** —— 见下方说明。四条之间**不重置**。
+> ⚠️ **必须每格独立跑，不能连着发四条。**
+>
+> 判断"持续性"是**按天**算的。你一天内连发四条，它们全落在同一天，
+> 模型会正确地判成"单次"——录制时实测踩过这个坑。
+> 种子里那两条之所以管用，正因为它们在 **8/4 和 8/7**，是跨天的。
+>
+> **打法**：每格之前先按下表设好起始状态，**只发一条**，截图，再做下一格。
+> 每格一条消息，反而比连发更快。
 
-> ⚠️ **为什么是「清空」**：种子预置了 2 条食欲下降观察（8/4、8/7）。
-> 点「重置」会把它们回填，于是第一条发进去就已经被判成"本周第三次"，
-> 第一格根本不是记录层——录制时实际踩过这个坑。
-> 点「清空」是零历史，第一条才是真正"孤立的一次"。
-
-| 顺序 | 身份 | 输入 | 期望 |
+| 格 | 起始状态 | 输入 | 期望 |
 |---|---|---|---|
-| 1 | Rosa | `Ah Ma today lunch eat a bit less lah, but she ok, now watching TV.` | ⚪ 记录，通知：无 |
-| 2 | Rosa | `Ah Ma still no appetite today, half bowl only. This week third time already.` | 🟡 常规通报，通知：家人 |
-| 3 | Rosa | `Ah Ma only eat half her lunch again.` | 🟡 **仍然是黄的** |
-| 4 | Rosa | `she got no mood to eat, only eat small small, and she say she feel a bit dizzy.` | 🔴 医生 + 家人 |
+| 1 | 点**「清空」** | `Ah Ma today lunch eat a bit less lah, but she ok, now watching TV.` | ⚪ 记录 · 通知无 |
+| 2 | 点**「重置」** | `Ah Ma only eat half her lunch again.` | 🟡 常规通报 · 家人 |
+| 3 | 点**「重置」** | `she got no mood to eat, only eat small small, and she say she feel a bit dizzy.` | 🔴 即时升级 · 医生+家人 |
+| 4 | 点**「重置」** | `Ah Ma fall down in the toilet, now she cannot stand up.` | 🔴 但**指向 995** |
 
-**截四张分开的图**并排放。**第 3 条是重点**——刚调过药但没升级，
-排版时给它一个标注："刚调过药，但只有既有症状在持续 → 不升级"。
+**格 2 是"忍住"的证明**，排版时给它加标注。它的 reason 会明确写出
+「该症状在 8/6 调药**前**已存在，**不能归因于** Amlodipine」——
+刚调过药 + 食欲下降，很多系统到这里就报红了，我们没有。
+
+**格 4 是唯一一个系统说"这不归我管"的**。输出会是
+「明确安全信号，**超出本系统判断范围**」+ 给 Rosa 的话直接指向
+「立即按紧急按钮或拨打 995，不要移动 Ah Ma」。
+**承认边界是加分项**——它证明我们知道自己的能力范围在哪，
+而不是什么都敢判。
+
+⚠️ 原稿里的"格3 = 刚调过药但只有既有症状"已**并入格 2**：
+实测中格 2 的判断本来就包含了这层推理，单独做一格是重复的。
 
 ---
 
