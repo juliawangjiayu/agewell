@@ -121,6 +121,7 @@ class TestMessageEndpoint:
              patch("app.main.repo.get_family_by_slug", return_value={"id": 1, "slug": "ah-ma"}), \
              patch("app.main.repo.get_profiles", return_value=_fake_profiles()), \
              patch("app.main.repo.get_recent_observations", return_value=[]), \
+             patch("app.main.repo.get_recent_task_breakdowns", return_value=[]), \
              patch("app.main.repo.save_observation", return_value={}), \
              patch("app.main.repo.save_task_breakdown", return_value={}), \
              patch("app.main._get_llm", return_value=mock_chat_completion):

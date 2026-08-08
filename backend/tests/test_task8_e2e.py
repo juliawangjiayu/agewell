@@ -44,6 +44,7 @@ def _patches():
         patch("app.main.repo.get_family_by_slug", return_value=FAKE_FAMILY),
         patch("app.main.repo.get_profiles", return_value=FAKE_PROFILES),
         patch("app.main.repo.get_recent_observations", return_value=FAKE_OBS),
+        patch("app.main.repo.get_recent_task_breakdowns", return_value=[]),
         patch("app.main.repo.save_observation", return_value={}),
         patch("app.main.repo.save_task_breakdown", return_value={}),
         patch("app.main._get_llm", return_value=mock_chat_completion),

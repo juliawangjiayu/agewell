@@ -82,6 +82,8 @@ export interface HelperResult {
   reason: string;
   /** 0–2 条；只在答案会改变分级、且女佣当场答得上来时才问 */
   clarifying_questions?: string[];
+  /** 本轮汇报对应上了哪些交代过的任务——"指令有没有落地"的可见证据 */
+  task_confirmations?: string[];
   outputs: HelperOutputs;
 }
 

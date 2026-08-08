@@ -476,6 +476,22 @@ body { height: 100dvh; overflow: hidden; }
   gap: 5px;
   color: var(--accent-blue);
 }
+.taskconfirm-section .result-section-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--accent-green);
+}
+.taskconfirm-item {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-left: 3px solid var(--accent-green);
+  border-radius: var(--radius-sm);
+  padding: 7px 11px;
+  margin-top: 4px;
+  font-size: 12.5px;
+}
+
 .clarify-q {
   background: #eff6ff;
   border: 1px solid #bfdbfe;

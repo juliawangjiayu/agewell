@@ -150,6 +150,8 @@ def _get_stt():
 def _build_profiles_with_obs(conn, family_id: int) -> dict:
     profiles = repo.get_profiles(conn, family_id)
     profiles["recent_observations"] = repo.get_recent_observations(conn, family_id, limit=10)
+    # 女佣汇报时要能对上雇主交代过的任务，否则「确认闭环」只是前后脚发两条消息
+    profiles["recent_tasks"] = repo.get_recent_task_breakdowns(conn, family_id, limit=2)
     return profiles
 
 
@@ -164,6 +166,7 @@ def _result_to_dict(result: HelperResult | EmployerResult) -> dict:
             "notify": result.notify,
             "reason": result.reason,
             "clarifying_questions": result.clarifying_questions,
+            "task_confirmations": result.task_confirmations,
             "outputs": result.outputs,
         }
     else:

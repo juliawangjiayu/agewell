@@ -44,6 +44,24 @@ _LLM_FIXTURES: dict[str, dict] = {
             "elder": None,
         },
     },
+    # helper skill: 任务回执 + 澄清提问（女佣执行完汇报，且话说得太简单）
+    "dinner done": {
+        "restored_text": "女佣回报晚饭与用药已按交代完成；另提到老人今天状态不佳，未说明是哪一方面",
+        "task_confirmations": [
+            "晚饭 18:30 已开饭（5人份，与交代一致）",
+            "Metformin 已在饭后服用（与交代一致，非饭前）",
+        ],
+        "clarifying_questions": ["是哪方面不太好——吃饭、走动，还是精神？"],
+        "grade": "record",
+        "notify": [],
+        "reason": "任务已按交代落地；健康描述信息量不足以分级，已提出一条当场可答的问题",
+        "outputs": {
+            "family": None,
+            "doctor": None,
+            "helper": "收到 Rosa，今晚的都对上了。方便的话告诉我是哪方面不太好？",
+            "elder": None,
+        },
+    },
     # helper skill: 澄清提问路径（模糊输入 → 先问一句，再定级）
     "not so good": {
         "restored_text": "女佣报告老人今天状态不佳，但未说明是哪一方面",

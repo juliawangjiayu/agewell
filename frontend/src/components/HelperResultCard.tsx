@@ -1,6 +1,13 @@
 import type { HelperResult } from "../types";
 import { GradeTag } from "./GradeTag";
-import { Users, Stethoscope, MessageCircle, Ear, HelpCircle } from "lucide-react";
+import {
+  Users,
+  Stethoscope,
+  MessageCircle,
+  Ear,
+  HelpCircle,
+  ClipboardCheck,
+} from "lucide-react";
 
 interface Props {
   result: HelperResult;
@@ -19,6 +26,7 @@ export function HelperResultCard({ result }: Props) {
     notify,
     reason,
     clarifying_questions,
+    task_confirmations,
     outputs,
   } = result;
 
@@ -52,6 +60,20 @@ export function HelperResultCard({ result }: Props) {
         <div className="result-section-label">语义还原</div>
         <p className="result-text restored">{restored_text}</p>
       </div>
+
+      {/* 任务回执 —— 雇主交代的事，这里被确认落地了 */}
+      {task_confirmations && task_confirmations.length > 0 && (
+        <div className="result-section taskconfirm-section">
+          <div className="result-section-label">
+            <ClipboardCheck size={13} /> 任务回执
+          </div>
+          {task_confirmations.map((t, i) => (
+            <p key={i} className="result-text taskconfirm-item">
+              {t}
+            </p>
+          ))}
+        </div>
+      )}
 
       {/* Reason */}
       <div className="result-section">

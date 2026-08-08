@@ -49,6 +49,8 @@ class HelperResult:
     notify: list[str] = field(default_factory=list)
     reason: str = ""
     clarifying_questions: list[str] = field(default_factory=list)
+    # 本轮汇报对应上了哪些交代过的任务——"指令有没有落地"的可见证据
+    task_confirmations: list[str] = field(default_factory=list)
     outputs: dict[str, Any] = field(default_factory=dict)
     raw_llm: str = ""              # full LLM reply for debugging
 
@@ -147,12 +149,33 @@ def _fmt_observations(recent_obs: list) -> list[str]:
     return lines
 
 
+def _fmt_recent_tasks(recent_tasks: list) -> list[str]:
+    """
+    渲染雇主最近下发的任务清单。
+
+    没有这一段，女佣汇报「药我饭后给她吃了」时，判断层根本不知道
+    这对应着任何一项交代过的任务——"确认一条指令有没有落地"就无从谈起。
+    """
+    lines = []
+    for tb in recent_tasks[:2]:
+        when = _with_weekday(tb.get("created_at"))
+        lines.append(f"  · {when} 雇主交代：{tb.get('understood') or tb.get('raw_instruction','')}")
+        tasks = _as_obj(tb.get("tasks"), [])
+        for t in tasks:
+            if not isinstance(t, dict):
+                continue
+            time_str = t.get("time") or "时间灵活"
+            lines.append(f"      - [{time_str}] {t.get('item','')}")
+    return lines
+
+
 def _build_family_context(profiles: dict) -> str:
     """Serialize family profiles into a readable context string for the prompt."""
     elder = profiles.get("elder") or {}
     employer = profiles.get("employer") or {}
     caregiver = profiles.get("caregiver") or {}
     recent_obs = profiles.get("recent_observations") or []
+    recent_tasks = profiles.get("recent_tasks") or []
 
     meds = _as_obj(elder.get("medications"), [])
     followups = _as_obj(elder.get("followups"), {})
@@ -172,6 +195,11 @@ def _build_family_context(profiles: dict) -> str:
         f"雇主作息：{employer.get('work_schedule','未知')}",
         f"女佣：{caregiver.get('name','Rosa')}，工作语言：English/Singlish",
     ]
+
+    task_lines = _fmt_recent_tasks(recent_tasks)
+    if task_lines:
+        ctx_parts.append("雇主最近下发给女佣的任务清单：")
+        ctx_parts.extend(task_lines)
 
     obs_lines = _fmt_observations(recent_obs)
     if obs_lines:
@@ -235,6 +263,7 @@ def process_helper_observation(
             result.notify = parsed.get("notify", [])
             result.reason = parsed.get("reason", "")
             result.clarifying_questions = parsed.get("clarifying_questions") or []
+            result.task_confirmations = parsed.get("task_confirmations") or []
             result.outputs = parsed.get("outputs", {})
         else:
             # JSON parse failed: safe fallback

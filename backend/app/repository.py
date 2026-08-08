@@ -225,6 +225,27 @@ def get_recent_observations(
 # Task Breakdowns
 # ---------------------------------------------------------------------------
 
+def get_recent_task_breakdowns(
+    conn: psycopg.Connection, family_id: int, limit: int = 3
+) -> list[dict]:
+    """
+    最近下发给女佣的任务清单。
+
+    女佣端判断时需要看到这些——否则她汇报「药我饭后给她吃了」时，
+    系统不知道这对应着任何一项交代过的任务，闭环就断了。
+    """
+    rows = conn.execute(
+        """
+        SELECT * FROM task_breakdowns
+        WHERE family_id = %s AND skill_on = TRUE
+        ORDER BY created_at DESC
+        LIMIT %s
+        """,
+        (family_id, limit),
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
 def save_task_breakdown(
     conn: psycopg.Connection, family_id: int, data: dict[str, Any]
 ) -> dict:
