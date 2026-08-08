@@ -89,6 +89,9 @@ class ElderIn(BaseModel):
     medications: list[dict] = []
     followups: dict = {}
     last_med_change_date: str | None = None   # ISO date string
+    # 结构化调药记录 {drug, from, to, date}。缺了这个字段，Pydantic 会把它丢掉，
+    # 医生端就只能写「具体药物不详」。
+    last_med_change: dict = {}
 
 
 class EmployerIn(BaseModel):
@@ -337,18 +340,28 @@ def list_observations(
 
 @app.post("/families/{slug}/reset")
 def reset_family(slug: str) -> dict[str, Any]:
-    """Clear all observations and task_breakdowns; re-seed seed observations."""
+    """
+    Reset the demo family back to seed state.
+
+    「重置到种子状态」要名副其实：既清观察/任务记录，也把三张 profile 重新写回
+    种子值。此前只重置了观察——启动时的 seed 是 skip_if_exists，一旦家庭已存在
+    就跳过，profile 便永远停留在第一次播种的数据上（调药记录为空、复诊日期过期）。
+    """
     with get_connection() as conn:
         fam = _get_family_or_404(conn, slug)
         deleted = repo.reset_family_observations(conn, fam["id"])
     # Re-seed if this is the demo family
     if slug == "ah-ma":
         try:
-            from app.seed import SEED_OBSERVATIONS
+            from app.seed import CAREGIVER, ELDER, EMPLOYER, SEED_OBSERVATIONS
             import copy
             with get_connection() as conn:
                 fam = repo.get_family_by_slug(conn, slug)
                 fid = fam["id"]
+                # profile 也回到种子值，否则调药记录/复诊日期会一直是旧的
+                repo.upsert_employer_profile(conn, fid, copy.deepcopy(EMPLOYER))
+                repo.upsert_elder_profile(conn, fid, copy.deepcopy(ELDER))
+                repo.upsert_caregiver_profile(conn, fid, copy.deepcopy(CAREGIVER))
                 for obs in copy.deepcopy(SEED_OBSERVATIONS):
                     offset = obs.pop("observed_at_offset", None)
                     saved = repo.save_observation(conn, fid, obs)
