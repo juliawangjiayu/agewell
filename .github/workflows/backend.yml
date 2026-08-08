@@ -5,10 +5,13 @@ on:
     branches: [main]
     paths:
       - "backend/**"
+      - ".github/workflows/backend.yml"
   pull_request:
     branches: [main]
     paths:
       - "backend/**"
+      - ".github/workflows/backend.yml"
+  workflow_dispatch:
 
 jobs:
   lint-and-test:
@@ -45,26 +48,34 @@ jobs:
   deploy:
     needs: lint-and-test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     steps:
       - name: Trigger Railway deployment
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          SERVICE_ID: 27232db5-a4dd-4f14-bac6-2649af675f13
+          ENVIRONMENT_ID: a725ea03-900a-4d0a-9f56-9777214b6a16
+          COMMIT_SHA: ${{ github.sha }}
         run: |
-          RESPONSE=$(curl -s -X POST https://backboard.railway.com/graphql/v2 \
-            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "query": "mutation Deploy($serviceId: String!, $environmentId: String!) { serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId) }",
-              "variables": {
-                "serviceId": "27232db5-a4dd-4f14-bac6-2649af675f13",
-                "environmentId": "a725ea03-900a-4d0a-9f56-9777214b6a16"
-              }
+          echo "Deploying commit $COMMIT_SHA"
+          PAYLOAD=$(jq -n \
+            --arg serviceId "$SERVICE_ID" \
+            --arg environmentId "$ENVIRONMENT_ID" \
+            --arg commitSha "$COMMIT_SHA" \
+            '{
+              query: "mutation Deploy($serviceId: String!, $environmentId: String!, $commitSha: String!) { serviceInstanceDeployV2(serviceId: $serviceId, environmentId: $environmentId, commitSha: $commitSha) }",
+              variables: { serviceId: $serviceId, environmentId: $environmentId, commitSha: $commitSha }
             }')
+          RESPONSE=$(curl -s -X POST https://backboard.railway.com/graphql/v2 \
+            -H "Authorization: Bearer $RAILWAY_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
           echo "Railway response: $RESPONSE"
           if echo "$RESPONSE" | grep -q '"errors"'; then
             echo "Railway deployment failed: $RESPONSE"
             exit 1
           fi
-          if ! echo "$RESPONSE" | grep -q 'serviceInstanceDeploy'; then
+          if ! echo "$RESPONSE" | grep -q 'serviceInstanceDeployV2'; then
             echo "Unexpected Railway response: $RESPONSE"
             exit 1
           fi
