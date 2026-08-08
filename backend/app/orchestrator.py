@@ -97,6 +97,35 @@ def _with_weekday(value: Any) -> str:
         return str(value)
 
 
+def _as_str_list(value: Any) -> list[str]:
+    """
+    把模型返回的列表规整成纯字符串列表。
+
+    实测 DeepSeek 会把 clarifying_questions 写成 [{"question": "..."}] 而不是
+    ["..."]。前端直接 {q} 渲染一个对象时 React 会抛
+    "Objects are not valid as a React child" —— 整页白屏。
+    契约在 skill 里写清楚了，这里再兜一层，模型跑偏也不至于让 demo 挂掉。
+    """
+    out: list[str] = []
+    for item in value or []:
+        if isinstance(item, str):
+            text = item
+        elif isinstance(item, dict):
+            text = str(
+                item.get("question")
+                or item.get("text")
+                or item.get("item")
+                or item.get("content")
+                or ""
+            )
+        else:
+            text = str(item)
+        text = text.strip()
+        if text:
+            out.append(text)
+    return out
+
+
 def _as_obj(value: Any, default: Any) -> Any:
     """JSONB 列有时以字符串回来，统一解析。"""
     if isinstance(value, str):
@@ -271,9 +300,18 @@ def process_helper_observation(
             result.grade = parsed.get("grade", "record")
             result.notify = parsed.get("notify", [])
             result.reason = parsed.get("reason", "")
-            result.clarifying_questions = parsed.get("clarifying_questions") or []
-            result.task_confirmations = parsed.get("task_confirmations") or []
+            result.clarifying_questions = _as_str_list(parsed.get("clarifying_questions"))
+            result.task_confirmations = _as_str_list(parsed.get("task_confirmations"))
             result.outputs = parsed.get("outputs", {})
+            # 提问与升级互斥：需要问才能定级，就没有足够证据去打断医生。
+            # 安全信号（站不稳/意识模糊等）不该走提问路径，由 skill 直接升级。
+            if result.clarifying_questions and result.grade == "escalate":
+                result.grade = "routine"
+                result.notify = [n for n in result.notify if n != "doctor"]
+                result.outputs.pop("doctor", None)
+                result.reason = (
+                    f"{result.reason}（证据尚不明确，已降为常规通报并提出澄清问题）"
+                )
         else:
             # JSON parse failed: safe fallback
             result.grade = "record"
