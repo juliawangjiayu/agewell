@@ -10,7 +10,7 @@ interface Props {
 
 const ROLE_LABEL: Record<string, string> = {
   helper: "Rosa",
-  employer: "丽珍",
+  employer: "Rachel",
   bot: "Bot",
 };
 

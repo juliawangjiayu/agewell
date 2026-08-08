@@ -231,7 +231,7 @@ export default function App() {
               className={clsx("role-btn", role === "employer" && "active")}
               onClick={() => setRole("employer")}
             >
-              丽珍（雇主）
+              Rachel（雇主）
             </button>
           </div>
 
@@ -279,12 +279,12 @@ export default function App() {
               <div className="messages-list">
                 {messages.length === 0 && (
                   <div className="messages-empty">
-                    <p>以 Rosa（照护者）或丽珍（雇主）身份发言</p>
+                    <p>以 Rosa（照护者）或Rachel（雇主）身份发言</p>
                     <p className="hint">
                       示例 Rosa 输入：「Ma'am, Ah Ma today no mood to eat, lunch eat small small only half bowl… and she say she feel a bit dizzy.」
                     </p>
                     <p className="hint">
-                      示例丽珍输入：「今晚我们四个人过来吃饭，妈妈的药记得饭前吃，6点要炒菜就早点准备。」
+                      示例Rachel输入：「今晚我们四个人过来吃饭，妈妈的药记得饭前吃，6点要炒菜就早点准备。」
                     </p>
                   </div>
                 )}
@@ -307,7 +307,7 @@ export default function App() {
               {/* Input bar */}
               <div className="input-bar">
                 <div className={clsx("input-role-indicator", `indicator-${role}`)}>
-                  {role === "helper" ? "Rosa" : "丽珍"}
+                  {role === "helper" ? "Rosa" : "Rachel"}
                 </div>
                 <textarea
                   className="input-textarea"
@@ -317,7 +317,7 @@ export default function App() {
                   placeholder={
                     role === "helper"
                       ? "Rosa 用 English / Singlish 描述观察…"
-                      : "丽珍用中文发指令…"
+                      : "Rachel用中文发指令…"
                   }
                   rows={2}
                   disabled={loading || !hasFamily}
@@ -379,7 +379,7 @@ function buildBotMessage(result: ApiResult, _senderRole: Role): ChatMessage {
     } else {
       const n = result.tasks?.length ?? 0;
       content = result.conflicts?.length
-        ? `⚠️ 指令与用药表不一致，已拆解为 ${n} 项任务并向丽珍确认。`
+        ? `⚠️ 指令与用药表不一致，已拆解为 ${n} 项任务并向Rachel确认。`
         : `已拆解为 ${n} 项任务，等待 Rosa 逐项确认。`;
     }
   }

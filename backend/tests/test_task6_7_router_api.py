@@ -90,7 +90,7 @@ def _fake_profiles():
             "followups": {},
             "last_med_change_date": "2026-07-30",
         },
-        "employer": {"name": "丽珍", "relation": "女儿", "work_schedule": "工作日不在场"},
+        "employer": {"name": "Rachel", "relation": "女儿", "work_schedule": "工作日不在场"},
         "caregiver": {"name": "Rosa"},
         "recent_observations": [],
     }

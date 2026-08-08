@@ -8,14 +8,14 @@ interface Props {
 
 const DEFAULT_FORM: OnboardForm = {
   employer: {
-    name: "丽珍",
+    name: "Rachel",
     language: "中文",
     relation: "女儿",
     work_schedule: "与 Ah Ma 不同住。工作日各自生活；一般周五晚接 Ah Ma 吃饭，周六、周日一起吃午晚饭。",
     notes: "主要照护决策者，每周只有周五晚到周日在场；工作日老人身边只有 Rosa。",
   },
   elder: {
-    name: "Ah Ma",
+    name: "Mrs Lim（Ah Ma）",
     age: 82,
     conditions: ["高血压", "2型糖尿病"],
     baseline_notes: "独住 HDB，与 Rosa 同住；平时三餐正常，能自己走动，晚饭后爱看电视。",

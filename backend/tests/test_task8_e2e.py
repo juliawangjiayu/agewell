@@ -29,7 +29,7 @@ FAKE_PROFILES = {
         "followups": {},
         "last_med_change_date": "2026-07-30",
     },
-    "employer": {"name": "丽珍", "relation": "女儿", "work_schedule": "工作日不在场"},
+    "employer": {"name": "Rachel", "relation": "女儿", "work_schedule": "工作日不在场"},
     "caregiver": {"name": "Rosa"},
 }
 FAKE_OBS = [
@@ -89,7 +89,7 @@ class TestE2EDemo:
         assert d["outputs"]["doctor"] is not None
 
     def test_day5_employer_task_breakdown(self):
-        """节拍2: 丽珍发备餐指令 → 5人份 tasks + English helper_message。"""
+        """节拍2: Rachel发备餐指令 → 5人份 tasks + English helper_message。"""
         resp = _post(
             "今晚我们四个人过来吃饭，妈妈的药记得饭前吃，6点要炒菜就早点准备",
             role="employer", skill_on=True,

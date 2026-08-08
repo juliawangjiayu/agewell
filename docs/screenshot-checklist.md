@@ -18,7 +18,7 @@ Demo 地址：https://agewell-xi.vercel.app/
 
 ### 🟢 S1 · 三张 profile 卡片 → 用于 P3
 
-**怎么截**：打开 demo，截左侧栏三张卡（雇主丽珍 / 被照顾者 Ah Ma / 照护者 Rosa）。
+**怎么截**：打开 demo，截左侧栏三张卡（雇主Rachel / 被照顾者 Ah Ma / 照护者 Rosa）。
 
 **检查点**：Ah Ma 那张卡里，**三种药必须显示药名**
 （Amlodipine（氨氯地平）/ Metformin（二甲双胍）/ Losartan（氯沙坦））。
@@ -53,7 +53,7 @@ Demo 地址：https://agewell-xi.vercel.app/
 
 | 步 | 身份 | 输入 | 要截到什么 |
 |---|---|---|---|
-| S3-1 | 丽珍（雇主） | `今晚我们四个人过来吃饭，妈妈的药记得饭前吃，6点要炒菜就早点准备。` | 黄色「指令与用药表不一致」卡 + 带时间的任务清单 |
+| S3-1 | Rachel（雇主） | `今晚我们四个人过来吃饭，妈妈的药记得饭前吃，6点要炒菜就早点准备。` | 黄色「指令与用药表不一致」卡 + 带时间的任务清单 |
 | S3-2 | Rosa（照护者） | `Ma'am, dinner done, Ah Ma take medicine already. But she not so good today.` | **绿色「任务回执」面板** + 蓝色「需要确认」追问框 |
 | S3-3 | Rosa（照护者） | `Her walking, she hold the wall today, never like that before.` | 🔴 即时升级 + 四段输出（含「给 Ah Ma」那段） |
 

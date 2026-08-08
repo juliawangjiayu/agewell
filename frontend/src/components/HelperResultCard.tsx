@@ -100,7 +100,7 @@ export function HelperResultCard({ result }: Props) {
         {outputs.family && (
           <div className="output-block output-family">
             <div className="output-label">
-              <Users size={13} /> 给家人（丽珍）
+              <Users size={13} /> 给家人（Rachel）
             </div>
             <p>{outputs.family}</p>
           </div>

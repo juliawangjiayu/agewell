@@ -79,7 +79,7 @@ _LLM_FIXTURES: dict[str, dict] = {
     # employer skill
     "今晚我们四个人": {
         "understood": (
-            "今晚丽珍一家4人来 Ah Ma 家吃晚饭，连 Ah Ma 共5人，需备够5人份。"
+            "今晚Rachel一家4人来 Ah Ma 家吃晚饭，连 Ah Ma 共5人，需备够5人份。"
             "另：指令说「药饭前吃」，但晚饭对应的是 Metformin，"
             "标准建议为随餐或饭后服用，已列入待确认。"
         ),
@@ -98,7 +98,7 @@ _LLM_FIXTURES: dict[str, dict] = {
             {"item": "炒菜", "time": "18:00", "tell_by": "17:00", "detail": "5人份"},
             {"item": "开饭", "time": "18:30", "tell_by": None, "detail": "5人份，摆5副餐具"},
             {"item": "让 Ah Ma 吃降糖药 Metformin", "time": "19:00", "tell_by": None,
-             "detail": "饭后吃，不是饭前——按用药表随餐或饭后服用，已在跟丽珍确认"},
+             "detail": "饭后吃，不是饭前——按用药表随餐或饭后服用，已在跟Rachel确认"},
         ],
         "helper_message": (
             "Hi Rosa, tonight 4 guests + Ah Ma = 5 people, so please prepare for 5. "

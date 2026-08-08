@@ -1,5 +1,5 @@
 """
-Seed script: pre-populate the Ah Ma / Rosa / 丽珍 demo family.
+Seed script: pre-populate the Ah Ma / Rosa / Rachel demo family.
 
 Run once after Railway Postgres is up:
     python -m app.seed
@@ -38,13 +38,13 @@ def _next_friday(d: date) -> date:
 
 
 # 复诊日必须是「未来的某个周五」——原本写死 str(TODAY)，
-# demo 在非周五打开时，剧本里「周五复诊 + 丽珍来接」就对不上了。
+# demo 在非周五打开时，剧本里「周五复诊 + Rachel来接」就对不上了。
 NEXT_FOLLOWUP = _next_friday(TODAY)
 
 FAMILY_SLUG = "ah-ma"
 
 ELDER = {
-    "name": "陈亚妹 (Ah Ma)",
+    "name": "Mrs Lim（Ah Ma）",
     "age": 82,
     "conditions": ["高血压", "2型糖尿病"],
     "baseline_notes": "独自住在自己的 HDB，与 Rosa（住家女佣）同住；平时三餐正常，能自己走动，晚饭后爱看电视",
@@ -74,7 +74,7 @@ ELDER = {
 }
 
 EMPLOYER = {
-    "name": "丽珍",
+    "name": "Rachel",
     "language": "zh",
     "relation": "女儿",
     "work_schedule": "与 Ah Ma 不同住。工作日各自生活；一般周五晚上接 Ah Ma 一起吃饭，周六、周日一起吃午饭和晚饭。周一到周四不在 Ah Ma 身边。",
