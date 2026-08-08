@@ -140,8 +140,16 @@ def _fmt_med_change(change: Any, fallback_date: Any) -> str:
 
 
 def _fmt_observations(recent_obs: list) -> list[str]:
+    """
+    仓库按 observed_at DESC 返回（最新在前）。这里取**最新** 5 条后反转成时间正序，
+    与下面「最新在后」的表头一致。
+
+    原实现是 recent_obs[-5:]，在 DESC 列表上取到的是**最旧**的 5 条——
+    观察超过 5 条时，最近几天的记录压根进不了 prompt，
+    "本周第 3 次"这类判断就失去了依据。
+    """
     lines = []
-    for obs in recent_obs[-5:]:  # show latest 5
+    for obs in reversed(recent_obs[:5]):
         when = _with_weekday(obs.get("observed_at") or obs.get("date") or obs.get("created_at"))
         text = obs.get("restored_text") or obs.get("raw_text", "")
         prefix = f"  - {when} " if when else "  - "
@@ -157,7 +165,8 @@ def _fmt_recent_tasks(recent_tasks: list) -> list[str]:
     这对应着任何一项交代过的任务——"确认一条指令有没有落地"就无从谈起。
     """
     lines = []
-    for tb in recent_tasks[:2]:
+    # 同样按 created_at DESC 返回，取最新 2 条后反转成时间正序
+    for tb in reversed(recent_tasks[:2]):
         when = _with_weekday(tb.get("created_at"))
         lines.append(f"  · {when} 雇主交代：{tb.get('understood') or tb.get('raw_instruction','')}")
         tasks = _as_obj(tb.get("tasks"), [])
@@ -352,7 +361,10 @@ def _parse_json_reply(text: str) -> dict | None:
         )
         text = inner.strip()
     try:
-        return json.loads(text)
+        parsed = json.loads(text)
+        # 调用方一律用 .get()，返回 list/str 会 AttributeError 变成 500
+        if isinstance(parsed, dict):
+            return parsed
     except json.JSONDecodeError:
         pass
 
