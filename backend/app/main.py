@@ -54,7 +54,7 @@ async def lifespan(app: FastAPI):
 
 _STARTED_AT = datetime.now(timezone.utc).isoformat()
 
-app = FastAPI(title="AgeWell 照护协同 API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="HóCARE 照护协同 API", version="0.1.0", lifespan=lifespan)
 
 _CORS_ORIGINS = [
     "https://agewell-xi.vercel.app",
@@ -339,13 +339,28 @@ def list_observations(
 
 
 @app.post("/families/{slug}/reset")
-def reset_family(slug: str) -> dict[str, Any]:
+def reset_family(
+    slug: str,
+    seed_observations: bool = Query(
+        True,
+        description="是否回填种子观察记录。false = 清空到零历史。",
+    ),
+) -> dict[str, Any]:
     """
-    Reset the demo family back to seed state.
+    Reset the demo family.
 
-    「重置到种子状态」要名副其实：既清观察/任务记录，也把三张 profile 重新写回
-    种子值。此前只重置了观察——启动时的 seed 是 skip_if_exists，一旦家庭已存在
-    就跳过，profile 便永远停留在第一次播种的数据上（调药记录为空、复诊日期过期）。
+    两种模式，都会把三张 profile 重新写回种子值
+    （启动时的 seed 是 skip_if_exists，家庭已存在就跳过，
+    profile 否则会永远停留在第一次播种的数据上）：
+
+    - `seed_observations=true`（默认，「重置」）
+      回填 2 条预置观察 → 上下文里已有"本周两次食欲下降"。
+
+    - `seed_observations=false`（「清空」）
+      不回填任何观察 → **零历史**。
+      演示"同一句话四种结局"时第一条必须是**孤立的一次**，
+      而默认重置留下的 2 条会让模型直接数出"本周第三次"，
+      第一格就不是记录层了。
     """
     with get_connection() as conn:
         fam = _get_family_or_404(conn, slug)
@@ -358,19 +373,25 @@ def reset_family(slug: str) -> dict[str, Any]:
             with get_connection() as conn:
                 fam = repo.get_family_by_slug(conn, slug)
                 fid = fam["id"]
-                # profile 也回到种子值，否则调药记录/复诊日期会一直是旧的
+                # profile 两种模式都回到种子值，否则调药记录/复诊日期会一直是旧的
                 repo.upsert_employer_profile(conn, fid, copy.deepcopy(EMPLOYER))
                 repo.upsert_elder_profile(conn, fid, copy.deepcopy(ELDER))
                 repo.upsert_caregiver_profile(conn, fid, copy.deepcopy(CAREGIVER))
-                for obs in copy.deepcopy(SEED_OBSERVATIONS):
-                    offset = obs.pop("observed_at_offset", None)
-                    saved = repo.save_observation(conn, fid, obs)
-                    if offset:
-                        conn.execute(
-                            "UPDATE observations SET observed_at = %s WHERE id = %s",
-                            (offset, saved["id"]),
-                        )
-                        conn.commit()
+                if seed_observations:
+                    for obs in copy.deepcopy(SEED_OBSERVATIONS):
+                        offset = obs.pop("observed_at_offset", None)
+                        saved = repo.save_observation(conn, fid, obs)
+                        if offset:
+                            conn.execute(
+                                "UPDATE observations SET observed_at = %s WHERE id = %s",
+                                (offset, saved["id"]),
+                            )
+                            conn.commit()
         except Exception as e:
             print(f"[reset] Re-seed failed: {e}")
-    return {"ok": True, "deleted": deleted, "slug": slug}
+    return {
+        "ok": True,
+        "deleted": deleted,
+        "slug": slug,
+        "seeded_observations": seed_observations,
+    }

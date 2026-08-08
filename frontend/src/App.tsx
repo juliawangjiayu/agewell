@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { clsx } from "clsx";
-import { RefreshCw, ToggleLeft, ToggleRight, Send } from "lucide-react";
+import { RefreshCw, ToggleLeft, ToggleRight, Send, Eraser } from "lucide-react";
 import type {
   ChatMessage,
   Profiles,
@@ -160,24 +160,29 @@ export default function App() {
   };
 
   // ── Reset ──────────────────────────────────────────────────────────────────
-  const handleReset = async () => {
-    if (!confirm("重置会把示例家庭恢复到种子状态（清除本次产生的观察记录）。确认？"))
-      return;
+  const handleReset = async (seedObservations = true) => {
+    const label = seedObservations ? "重置" : "清空";
+    const detail = seedObservations
+      ? "恢复到种子状态：保留 2 条预置观察（本周已两次食欲下降）。"
+      : "清空到零历史：不保留任何观察记录。演示「同一句话四种结局」时用这个，第一条才是孤立的一次。";
+    if (!confirm(`${label}示例家庭 —— ${detail}\n\n确认？`)) return;
     setError(null);
     setPendingQuestion(null);
     try {
-      await api.reset(slug);
+      await api.reset(slug, seedObservations);
       await loadProfiles(slug);
       setMessages([
         {
           id: uid(),
           role: "bot",
-          content: "已重置到种子状态 ✓ — Ah Ma 家庭上下文已恢复。",
+          content: seedObservations
+            ? "已重置到种子状态 ✓ — 上下文含 2 条预置观察。"
+            : "已清空 ✓ — 零历史，下一条观察会被当作孤立的一次。",
           timestamp: new Date(),
         },
       ]);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "重置失败");
+      setError(e instanceof Error ? e.message : `${label}失败`);
     }
   };
 
@@ -195,7 +200,7 @@ export default function App() {
       {/* ── Top bar ── */}
       <header className="topbar">
         <div className="topbar-left">
-          <span className="logo">AgeWell 照护协同</span>
+          <span className="logo">HóCARE</span>
           <span className="topbar-tagline">判断层 Demo</span>
         </div>
 
@@ -237,9 +242,22 @@ export default function App() {
 
           {/* Reset */}
           {hasFamily && (
-            <button className="reset-btn" onClick={handleReset} title="重置到种子状态">
-              <RefreshCw size={15} /> 重置
-            </button>
+            <>
+              <button
+                className="reset-btn"
+                onClick={() => handleReset(true)}
+                title="恢复种子状态（保留 2 条预置观察）"
+              >
+                <RefreshCw size={15} /> 重置
+              </button>
+              <button
+                className="reset-btn"
+                onClick={() => handleReset(false)}
+                title="清空到零历史（演示「四种结局」第一格用这个）"
+              >
+                <Eraser size={15} /> 清空
+              </button>
+            </>
           )}
 
           {/* Onboard another family */}

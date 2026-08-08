@@ -64,7 +64,13 @@ export const api = {
     });
   },
 
-  /** Reset a family back to seed state */
-  reset: (slug: string) =>
-    req<{ ok: boolean }>(`/families/${slug}/reset`, { method: "POST" }),
+  /**
+   * Reset a family.
+   * seedObservations=false → 清空到零历史（演示"四种结局"第一格要孤立的一次）
+   */
+  reset: (slug: string, seedObservations = true) =>
+    req<{ ok: boolean; deleted: number }>(
+      `/families/${slug}/reset?seed_observations=${seedObservations}`,
+      { method: "POST" }
+    ),
 };
